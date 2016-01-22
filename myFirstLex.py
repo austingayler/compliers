@@ -28,7 +28,7 @@ t_RPAREN  = r'\)'
 # A regular expression rule with some action code
 def t_NUMBER(t):
     r'\d+'
-    t.value = int(t.value)    
+    t.value = int(t.value)
     return t
 
 # Define a rule so we can track line numbers
@@ -47,8 +47,6 @@ def t_error(t):
 # Build the lexer
 lexer = lex.lex()
 
-
-
 # Test it out
 data = '''
 3 + 4 * 10
@@ -61,6 +59,6 @@ lexer.input(data)
 # Tokenize
 while True:
     tok = lexer.token()
-    if not tok: 
+    if not tok:
         break      # No more input
     print(tok)
