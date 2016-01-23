@@ -1,11 +1,9 @@
-# ------------------------------------------------------------
-# calclex.py
-#
-# tokenizer for a simple expression evaluator for
-# numbers and +,-,*,/
-# ------------------------------------------------------------
+
 import ply.lex as lex
 
+newline_counter = 0
+word_counter = 0
+character_counter = 0
 # List of token names.   This is always required
 tokens = (
    'NUMBER',
@@ -15,6 +13,8 @@ tokens = (
    'DIVIDE',
    'LPAREN',
    'RPAREN',
+   'NEW_LINE',
+   'WORD',
 )
 
 # Regular expression rules for simple tokens
@@ -24,17 +24,22 @@ t_TIMES   = r'\*'
 t_DIVIDE  = r'/'
 t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
-
-# A regular expression rule with some action code
-def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
-    return t
+t_NEW_LINE= r'\n'
 
 # Define a rule so we can track line numbers
 def t_newline(t):
     r'\n+'
+    global newline_counter
+    newline_counter += 1
     t.lexer.lineno += len(t.value)
+
+def t_WORD(t):
+    r'\w+'
+    global word_counter
+    global character_counter
+    character_counter = character_counter + len(t.value)
+    word_counter = word_counter + 1
+    return t
 
 # A string containing ignored characters (spaces and tabs)
 t_ignore  = ' \t'
@@ -49,16 +54,18 @@ lexer = lex.lex()
 
 # Test it out
 data = '''
-3 + 4 * 10
-  + -20 *2
+6 7 23
+three more words
 '''
 
 # Give the lexer some input
 lexer.input(data)
 
 # Tokenize
+
 while True:
     tok = lexer.token()
     if not tok:
         break      # No more input
-    print(tok)
+    #print(tok.value)
+print(str(newline_counter)+" "+str(word_counter)+" "+str(character_counter))
