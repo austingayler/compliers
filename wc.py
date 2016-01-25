@@ -1,5 +1,10 @@
-
 import ply.lex as lex
+import sys
+
+firstInput = sys.argv[1]
+inputFile = open(firstInput)
+data = inputFile.read()
+
 
 newline_counter = 0
 word_counter = 0
@@ -46,17 +51,13 @@ t_ignore  = ' \t'
 
 # Error handling rule
 def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
+    #print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 # Build the lexer
 lexer = lex.lex()
 
 # Test it out
-data = '''
-6 7 23
-three more words
-'''
 
 # Give the lexer some input
 lexer.input(data)
@@ -68,4 +69,4 @@ while True:
     if not tok:
         break      # No more input
     # print(tok.value)
-print(str(newline_counter)+" "+str(word_counter)+" "+str(character_counter))
+print(str(newline_counter)+" "+str(word_counter)+" "+str(character_counter)+" "+inputFile.name)
