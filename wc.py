@@ -20,8 +20,9 @@ def writeToFile(fileName, content):
 
 def writeOut(tokenType, value):
     with open("outputs/" + outputName, "a+") as f:
-        f.write("Token Type: " + tokenType + "\n")
-        f.write("Value: " + value.strip() + "\n")
+        # \r\n is needed so diff works properly (He has stupid C/windows style carriage returns in his testOutput files)
+        f.write("Token Type: " + tokenType + "\r\n")
+        f.write("Value: " + value.strip() + "\r\n")
 
 
 # List of token names.   This is always required
@@ -35,15 +36,17 @@ tokens = (
     'IDENTIFIER',
 )
 
+def t_LINE_COMMENT(t):
+    r'--.*(\n|$)'
+    # writeOut("COMMENT", t.value)
 
 def t_KEYWORD(t):
-    r'(^| )(?i)(PROGRAM|BEGIN|END|FUNCTION|READ|WRITE|IF|ELSE|ENDIF|WHILE|ENDWHILE|CONTINUE|BREAK|RETURN|INT| \
-    VOID|STRING|FLOAT)(\s|$)'
+    r'(^|\ *)(PROGRAM|BEGIN|FUNCTION|READ|WRITE|ENDIF|IF|ELSE|WHILE|ENDWHILE|CONTINUE|BREAK|RETURN|END|INT|VOID|STRING|FLOAT|VOID|READ|WRITE)(\ *|$)'
     writeOut("KEYWORD", t.value)
 
 
 def t_OPERATOR(t):
-    r'(^| )(:=|\+|\-|\*|/|=|!=|\<|\>|\(|\)|;|,|\<=|\>=)(\s|$)'
+    r'(^|\ *)(\<=|\>=|:=|\+|\-|\*|/|=|!=|\<|\>|\(|\)|;|,)(\s*|$)'
     writeOut("OPERATOR", t.value)
 
 
@@ -63,13 +66,9 @@ def t_INTLITERAL(t):
 
 
 def t_IDENTIFIER(t):
-    r'(^| )[a-zA-Z_]\w*(\s|$)'
+    r'(^|\ *)[a-zA-Z_]\w*(\s*|$)'
     writeOut("IDENTIFIER", t.value)
 
-
-def t_LINE_COMMENT(t):
-    r'--.*(\n|$)'
-    # writeOut("COMMENT", t.value)
 
 
 t_ignore = '\t\n'
