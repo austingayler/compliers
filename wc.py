@@ -1,7 +1,6 @@
 import sys
 
 import ply.lex as lex
-import re
 
 firstInput = sys.argv[1]
 inputFile = open(firstInput)
@@ -12,10 +11,6 @@ outputFile = open("outputs/" + outputName, "w+")
 outputFile.close()
 
 data = inputFile.read()
-
-def writeToFile(fileName, content):
-    with open("outputs/" + fileName, "a+") as f:
-        f.write(content + "\n")
 
 
 def writeOut(tokenType, value):
@@ -36,12 +31,14 @@ tokens = (
     'IDENTIFIER',
 )
 
+
 def t_LINE_COMMENT(t):
     r'--.*(\n|$)'
     # writeOut("COMMENT", t.value)
 
+
 def t_KEYWORD(t):
-    r'(^|\ *)(PROGRAM|BEGIN|FUNCTION|READ|WRITE|ENDIF|IF|ELSE|WHILE|ENDWHILE|CONTINUE|BREAK|RETURN|END|INT|VOID|STRING|FLOAT|VOID|READ|WRITE)(\ *|$)'
+    r'(^|\ *)(PROGRAM|BEGIN|FUNCTION|READ|WRITE|ENDIF|IF|ELSE|ENDWHILE|WHILE|CONTINUE|BREAK|RETURN|END|INT|VOID|STRING|FLOAT|VOID|READ|WRITE)(\ *|$)'
     writeOut("KEYWORD", t.value)
 
 
@@ -68,7 +65,6 @@ def t_INTLITERAL(t):
 def t_IDENTIFIER(t):
     r'(^|\ *)[a-zA-Z_]\w*(\s*|$)'
     writeOut("IDENTIFIER", t.value)
-
 
 
 t_ignore = '\t\n'
