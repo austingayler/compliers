@@ -1,62 +1,85 @@
-import ply.lex as lex
 import sys
+
+import ply.lex as lex
+import re
 
 firstInput = sys.argv[1]
 inputFile = open(firstInput)
+# Remove inputs/ and .micro from input file name
+outputName = firstInput[7:-6] + ".out"
+# create new file in outputs/
+outputFile = open("outputs/" + outputName, "w+")
+outputFile.close()
+
 data = inputFile.read()
+
+def writeToFile(fileName, content):
+    with open("outputs/" + fileName, "a+") as f:
+        f.write(content + "\n")
+
+
+def writeOut(tokenType, value):
+    with open("outputs/" + outputName, "a+") as f:
+        f.write("Token Type: " + tokenType + "\n")
+        f.write("Value: " + value.strip() + "\n")
+
 
 # List of token names.   This is always required
 tokens = (
-   'KEYWORD',
-   'LINE_COMMENT',
-   'STRINGLITERAL',
-   'FLOATLITERAL',
-   'INTLITERAL',
-   'IDENTIFIER',
+    'KEYWORD',
+    'OPERATOR',
+    'LINE_COMMENT',
+    'STRINGLITERAL',
+    'FLOATLITERAL',
+    'INTLITERAL',
+    'IDENTIFIER',
 )
-# Define a rule so we can track line numbers
+
+
 def t_KEYWORD(t):
-    r'(^| )(?i)(PROGRAM|BEGIN|END|FUNCTION|READ|WRITE|IF|ELSE|ENDIF|WHILE|ENDWHILE|CONTINUE|BREAK|RETURN|INT|VOID|STRING|FLOAT)(\s|$)'
-    print("Token Type: KEYWORD")
-    print("Value: "+t.value.strip())
+    r'(^| )(?i)(PROGRAM|BEGIN|END|FUNCTION|READ|WRITE|IF|ELSE|ENDIF|WHILE|ENDWHILE|CONTINUE|BREAK|RETURN|INT| \
+    VOID|STRING|FLOAT)(\s|$)'
+    writeOut("KEYWORD", t.value)
+
 
 def t_OPERATOR(t):
-    
     r'(^| )(:=|\+|\-|\*|/|=|!=|\<|\>|\(|\)|;|,|\<=|\>=)(\s|$)'
-    print("Token Type: OPERATOR")
-    print("Value: "+t.value.strip())
+    writeOut("OPERATOR", t.value)
+
 
 def t_STRINGLITERAL(t):
     r'(\".*\")|(\'.*\')'
-    print("Token Type: STRINGLITERAL")
-    print("Value: "+t.value.strip())
+    writeOut("STRINGLITERAL", t.value)
+
 
 def t_FLOATLITERAL(t):
     r'(-|)(\d*)(\.)(\d+)\ *'
-    print("Token Type: FLOATLITERAL")
-    print("Value: "+t.value.strip())
+    writeOut("FLOATLITERAL", t.value)
+
 
 def t_INTLITERAL(t):
     r'(-|)(\d+)\ *'
-    print("Token Type: INTLITERAL")
-    print("Value: "+t.value.strip())
+    writeOut("INTLITERAL", t.value)
+
 
 def t_IDENTIFIER(t):
     r'(^| )[a-zA-Z_]\w*(\s|$)'
-    print("Token Type: IDENTIFIER")
-    print("Value: "+t.value.strip())
+    writeOut("IDENTIFIER", t.value)
+
 
 def t_LINE_COMMENT(t):
     r'--.*(\n|$)'
-#    print("Line Comment: "+t.value.strip())
+    # writeOut("COMMENT", t.value)
 
-# A string containing ignored characters (spaces and tabs)
-# t_ignore  = ' \t'
 
-#Error handling rule
+t_ignore = '\t\n'
+
+
+# Error handling rule
 def t_error(t):
-    #print("Illegal character '%s'" % t.value[0])
+    # print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
+
 
 # Build the lexer
 lexer = lex.lex()
@@ -71,5 +94,5 @@ lexer.input(data)
 while True:
     tok = lexer.token()
     if not tok:
-        break      # No more input
-    # print(tok.value)
+        break  # No more input
+        # print(tok.value)
