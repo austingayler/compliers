@@ -5,51 +5,55 @@ firstInput = sys.argv[1]
 inputFile = open(firstInput)
 data = inputFile.read()
 
-
-newline_counter = 0
-word_counter = 0
-character_counter = 0
 # List of token names.   This is always required
 tokens = (
-   'NUMBER',
-   'PLUS',
-   'MINUS',
-   'TIMES',
-   'DIVIDE',
-   'LPAREN',
-   'RPAREN',
-   'NEW_LINE',
-   'WORD',
+   'KEYWORD',
+   'LINE_COMMENT',
+   'STRINGLITERAL',
+   'FLOATLITERAL',
+   'INTLITERAL',
+   'IDENTIFIER',
 )
-
-# Regular expression rules for simple tokens
-t_PLUS    = r'\+'
-t_MINUS   = r'-'
-t_TIMES   = r'\*'
-t_DIVIDE  = r'/'
-t_LPAREN  = r'\('
-t_RPAREN  = r'\)'
-t_NEW_LINE= r'\n'
-
 # Define a rule so we can track line numbers
-def t_newline(t):
-    r'\n+'
-    global newline_counter
-    newline_counter += 1
-    t.lexer.lineno += len(t.value)
+def t_KEYWORD(t):
+    r'(^| )(?i)(PROGRAM|BEGIN|END|FUNCTION|READ|WRITE|IF|ELSE|ENDIF|WHILE|ENDWHILE|CONTINUE|BREAK|RETURN|INT|VOID|STRING|FLOAT)(\s|$)'
+    print("Token Type: KEYWORD")
+    print("Value: "+t.value.strip())
 
-def t_WORD(t):
-    r'\w+'
-    global word_counter
-    global character_counter
-    character_counter = character_counter + len(t.value)
-    word_counter = word_counter + 1
-    return t
+def t_OPERATOR(t):
+    
+    r'(^| )(:=|\+|\-|\*|/|=|!=|\<|\>|\(|\)|;|,|\<=|\>=)(\s|$)'
+    print("Token Type: OPERATOR")
+    print("Value: "+t.value.strip())
+
+def t_STRINGLITERAL(t):
+    r'(\".*\")|(\'.*\')'
+    print("Token Type: STRINGLITERAL")
+    print("Value: "+t.value.strip())
+
+def t_FLOATLITERAL(t):
+    r'(-|)(\d*)(\.)(\d+)\ *'
+    print("Token Type: FLOATLITERAL")
+    print("Value: "+t.value.strip())
+
+def t_INTLITERAL(t):
+    r'(-|)(\d+)\ *'
+    print("Token Type: INTLITERAL")
+    print("Value: "+t.value.strip())
+
+def t_IDENTIFIER(t):
+    r'(^| )[a-zA-Z_]\w*(\s|$)'
+    print("Token Type: IDENTIFIER")
+    print("Value: "+t.value.strip())
+
+def t_LINE_COMMENT(t):
+    r'--.*(\n|$)'
+#    print("Line Comment: "+t.value.strip())
 
 # A string containing ignored characters (spaces and tabs)
-t_ignore  = ' \t'
+# t_ignore  = ' \t'
 
-# Error handling rule
+#Error handling rule
 def t_error(t):
     #print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
@@ -69,4 +73,3 @@ while True:
     if not tok:
         break      # No more input
     # print(tok.value)
-print(str(newline_counter)+" "+str(word_counter)+" "+str(character_counter)+" "+inputFile.name)
