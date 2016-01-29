@@ -16,6 +16,7 @@ data = inputFile.read()
 def writeOut(tokenType, value):
     with open("outputs/" + outputName, "a+") as f:
         # \r\n is needed so diff works properly (He has stupid C/windows style carriage returns in his testOutput files)
+        print("Token Type: " + tokenType + "\nValue: " + value.strip())
         f.write("Token Type: " + tokenType + "\r\n")
         f.write("Value: " + value.strip() + "\r\n")
 
