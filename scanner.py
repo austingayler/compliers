@@ -16,7 +16,7 @@ data = inputFile.read()
 def writeOut(tokenType, value):
     with open("outputs/" + outputName, "a+") as f:
         # \r\n is needed so diff works properly (He has stupid C/windows style carriage returns in his testOutput files)
-        print("Token Type: " + tokenType + "\nValue: " + value.strip())
+        #print("Token Type: " + tokenType + "\nValue: " + value.strip())
         f.write("Token Type: " + tokenType + "\r\n")
         f.write("Value: " + value.strip() + "\r\n")
 
@@ -36,36 +36,43 @@ tokens = (
 def t_LINE_COMMENT(t):
     r'--.*(\n|$)'
     # writeOut("COMMENT", t.value)
+    return t
 
 
 def t_KEYWORD(t):
     r'(^|\ *)(PROGRAM|BEGIN|FUNCTION|READ|WRITE|ENDIF|IF|ELSE|ENDWHILE|WHILE|CONTINUE|BREAK|RETURN|END|INT|VOID|STRING|FLOAT|VOID|READ|WRITE)(\ *|$)'
     writeOut("KEYWORD", t.value)
+    return t
 
 
 def t_OPERATOR(t):
     r'(^|\ *)(\<=|\>=|:=|\+|\-|\*|/|=|!=|\<|\>|\(|\)|;|,)(\s*|$)'
     writeOut("OPERATOR", t.value)
+    return t
 
 
 def t_STRINGLITERAL(t):
     r'(\".*\")|(\'.*\')'
     writeOut("STRINGLITERAL", t.value)
+    return t
 
 
 def t_FLOATLITERAL(t):
     r'(-|)(\d*)(\.)(\d+)\ *'
     writeOut("FLOATLITERAL", t.value)
+    return t
 
 
 def t_INTLITERAL(t):
     r'(-|)(\d+)\ *'
     writeOut("INTLITERAL", t.value)
+    return t
 
 
 def t_IDENTIFIER(t):
     r'(^|\ *)[a-zA-Z_]\w*(\s*|$)'
     writeOut("IDENTIFIER", t.value)
+    return t
 
 
 t_ignore = '\t\n'
@@ -91,4 +98,4 @@ while True:
     tok = lexer.token()
     if not tok:
         break  # No more input
-        # print(tok.value)
+    print(tok)
