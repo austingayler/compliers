@@ -1,11 +1,17 @@
 import sys
 
 import ply.lex as lex
+import re
+import os
 
 firstInput = sys.argv[1]
 inputFile = open(firstInput)
-# Remove inputs/ and .micro from input file name
-outputName = firstInput[7:-6] + ".out"
+
+# Remove os agnostic path and .micro from input file name
+outputName = re.sub('\.micro', '', firstInput)
+pathSep = os.path.sep
+regex = r'(.+'+ re.escape(pathSep) + r')*'
+outputName = re.sub(regex, '', outputName) + ".out"
 # create new file in outputs/
 outputFile = open("outputs/" + outputName, "w+")
 outputFile.close()
