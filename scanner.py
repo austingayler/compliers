@@ -8,23 +8,24 @@ firstInput = sys.argv[1]
 inputFile = open(firstInput)
 
 # Remove os agnostic path and .micro from input file name
-outputName = re.sub('\.micro', '', firstInput)
-pathSep = os.path.sep
-regex = r'(.+'+ re.escape(pathSep) + r')*'
-outputName = re.sub(regex, '', outputName) + ".out"
+# outputName = re.sub('\.micro', '', firstInput)
+# pathSep = os.path.sep
+# regex = r'(.+'+ re.escape(pathSep) + r')*'
+# outputName = re.sub(regex, '', outputName) + ".out"
 # create new file in outputs/
-outputFile = open("outputs/" + outputName, "w+")
-outputFile.close()
+# outputFile = open("Step2/outputs/" + outputName, "w+")
+# outputFile.close()
 
 data = inputFile.read()
 
 
 def writeOut(tokenType, value):
-    with open("outputs/" + outputName, "a+") as f:
+    print("Token Type: " + tokenType + "\nValue: " + value.strip())
+    #with open("outputs/" + outputName, "a+") as f:
         # \r\n is needed so diff works properly (He has stupid C/windows style carriage returns in his testOutput files)
-        #print("Token Type: " + tokenType + "\nValue: " + value.strip())
-        f.write("Token Type: " + tokenType + "\n")
-        f.write("Value: " + value.strip() + "\n")
+
+        # f.write("Token Type: " + tokenType + "\n")
+        # f.write("Value: " + value.strip() + "\n")
 
 
 # List of token names.   This is always required
@@ -104,4 +105,4 @@ while True:
     tok = lexer.token()
     if not tok:
         break  # No more input
-    print(tok)
+    # print(tok)
