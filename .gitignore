@@ -1,3 +1,7 @@
 env/
 .idea/
 outputs/
+__pycache__/
+*/usertest/*
+parser.out
+parsetab.py

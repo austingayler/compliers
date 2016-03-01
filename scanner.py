@@ -1,8 +1,6 @@
 import sys
 
 import ply.lex as lex
-import re
-import os
 
 firstInput = sys.argv[1]
 inputFile = open(firstInput)
@@ -20,13 +18,35 @@ data = inputFile.read()
 
 
 def writeOut(tokenType, value):
+    # pass
     print("Token Type: " + tokenType + "\nValue: " + value.strip())
-    #with open("outputs/" + outputName, "a+") as f:
-        # \r\n is needed so diff works properly (He has stupid C/windows style carriage returns in his testOutput files)
+    # with open("outputs/" + outputName, "a+") as f:
+    # \r\n is needed so diff works properly (He has stupid C/windows style carriage returns in his testOutput files)
 
-        # f.write("Token Type: " + tokenType + "\n")
-        # f.write("Value: " + value.strip() + "\n")
+    # f.write("Token Type: " + tokenType + "\n")
+    # f.write("Value: " + value.strip() + "\n")
 
+# IGNORE THESE, tried using the same way that I did with the operators below the
+#   tokens, but it didn't seem to work.  Leave them here in case they need to be used.
+
+# "BEGIN",
+# "PROGRAM",
+# "STRING",
+# "FLOAT",
+# "INT",
+# "END",
+# "VOID",
+# "FUNCTION",
+# "READ",
+# "WRITE",
+# "IF",
+# "ELSE",
+# "ENDIF",
+# "WHILE",
+# "ENDWHILE",
+# "CONTINUE",
+# "RETURN",
+# "BREAK",
 
 # List of token names.   This is always required
 tokens = (
@@ -36,19 +56,65 @@ tokens = (
     'STRINGLITERAL',
     'FLOATLITERAL',
     'INTLITERAL',
+
+    "COMPOP",
+    "ASSIGN",
+    "SEMI",
+    "COMMA",
+    "LPAREN",
+    "RPAREN",
+    "PLUS",
+    "MINUS",
+    "TIMES",
+    "DIVIDE",
     'IDENTIFIER',
+
 )
 
+# t_PROGRAM = r'(PROGRAM)'
+# t_BEGIN = r"(BEGIN)"
+# t_END = r"(END)"
+# t_INT = r"(INT)"
+# t_FLOAT = r"(FLOAT)"
+# t_STRING = r"(STRING)"
+# t_VOID = r"(VOID)"
+# t_FUNCTION = r"(FUNCTION)"
+# t_READ = r"(READ)"
+# t_WRITE = r"(WRITE)"
+# t_IF = r"(IF)"
+# t_ELSE = r"(ELSE)"
+# t_ENDIF = r"(ENDIF)"
+# t_WHILE = r"(WHILE)"
+# t_ENDWHILE = r"(ENDWHILE)"
+# t_CONTINUE = r"(CONTINUE)"
+# t_RETURN = r"(RETURN)"
+# t_BREAK = r"(BREAK)"
+
+
+# SOMETHING IS VERY WRONG, This seems like it should be the way to do it
+#  but then the parser doesn't know it is an operator... However OPERATOR
+#  isn't even used in the grammer... wttf.
+t_ASSIGN = r":="
+t_SEMI = r";"
+t_COMMA = r","
+t_LPAREN = r"\("
+t_RPAREN = r"\)"
+t_PLUS = r"\+"
+t_MINUS = r"\-"
+t_TIMES = r"\*"
+t_DIVIDE = r"\/"
+t_COMPOP = r"(<|>|=|!=|<=|>=)"
 
 def t_LINE_COMMENT(t):
     r'--.*(\n|$)'
     # writeOut("COMMENT", t.value)
-    return t
+    pass
 
 
 def t_KEYWORD(t):
     r'(^|\ *)(PROGRAM|BEGIN|FUNCTION|READ|WRITE|ENDIF|IF|ELSE|ENDWHILE|WHILE|CONTINUE|BREAK|RETURN|END|INT|VOID|STRING|FLOAT|VOID|READ|WRITE)(\ *|$)'
     writeOut("KEYWORD", t.value)
+    t.value = t.value.strip()
     return t
 
 
@@ -79,8 +145,8 @@ def t_INTLITERAL(t):
 def t_IDENTIFIER(t):
     r'(^|\ *)[a-zA-Z_]\w*(\s*|$)'
     writeOut("IDENTIFIER", t.value)
+    t.value = t.value.strip()
     return t
-
 
 t_ignore = '\t\n\r'
 

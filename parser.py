@@ -240,11 +240,5 @@ def p_error(p):
 
 parser = yacc.yacc(debug=1)
 
-data = """
-PROGRAM test
-BEGIN
-END
-"""
-
 result = parser.parse(data)
 print(result)

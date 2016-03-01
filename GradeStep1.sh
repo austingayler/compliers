@@ -9,6 +9,6 @@ for i in $INPUTS
         echo "Testing input file $i"
         output="${name}Test.out"
         outtest="${name}.out"
-        ./Micro $i > Step1/usertest/$output
+        ./MicroStep1.sh $i > Step1/usertest/$output
         colordiff -b -s Step1/usertest/$output Step1/outputs/$outtest
     done
