@@ -24,7 +24,7 @@ def writeOut(tokenType, value):
         # \r\n is needed so diff works properly (He has stupid C/windows style carriage returns in his testOutput files)
         #print("Token Type: " + tokenType + "\nValue: " + value.strip())
         f.write("Token Type: " + tokenType + "\n")
-        f.write("Value: " + value + "\n")
+        f.write("Value: " + value.strip() + "\n")
 
 
 # List of token names.   This is always required
@@ -52,7 +52,7 @@ def t_KEYWORD(t):
 
 
 def t_OPERATOR(t):
-    r'(^|\ *)(\<=|\>=|:=|\+|\-|\*|/|=|!=|\<|\>|\(|\)|;|,)'
+    r'(^|\ *)(\<=|\>=|:=|\+|\-|\*|/|=|!=|\<|\>|\(|\)|;|,)(\s*|$)'
     writeOut("OPERATOR", t.value)
     return t
 
@@ -76,7 +76,7 @@ def t_INTLITERAL(t):
 
 
 def t_IDENTIFIER(t):
-    r'(^|\ *)[a-zA-Z_]\w*'
+    r'(^|\ *)[a-zA-Z_]\w*(\s*|$)'
     writeOut("IDENTIFIER", t.value)
     return t
 
