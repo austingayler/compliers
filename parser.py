@@ -5,7 +5,7 @@ import scanner
 tokens = scanner.tokens
 data = scanner.data
 
-print(data)
+error = False
 
 ## PROGRAM
 def p_program(p):
@@ -27,8 +27,6 @@ def p_decl(p):
     pass
 
 ## GLOBAL STRING DECLARATIONS
-
-# 'string_decl : STRING id := str ;'
 def p_string_decl(p):
     'string_decl : STRING id ASSIGN str SEMI'
     pass
@@ -38,8 +36,6 @@ def p_str(p):
     pass
 
 ## Variable Declaration
-
-#'var_decl : var_type id_list ;'
 def p_var_decl(p):
     'var_decl : var_type id_list SEMI'
     pass
@@ -58,14 +54,12 @@ def p_id_list(p):
     'id_list : id id_tail'
     pass
 
-#"""id_tail : , id id_tail"""
 def p_id_tail(p):
     """id_tail : COMMA id id_tail
     | empty"""
     pass
 
 ## Function Paramater List
-
 def p_param_decl_list(p):
     """param_decl_list : param_decl param_decl_tail
     | empty"""
@@ -81,13 +75,11 @@ def p_param_decl_tail(p):
     pass
 
 ## Function Declarations
-
 def p_func_declarations(p):
     """func_declarations : func_decl func_declarations
     | empty"""
     pass
 
-#"""func_decl : FUNCTION any_type id (param_decl_list) BEGIN func_body END"""
 def p_func_decl(p):
     """func_decl : FUNCTION any_type id LPAREN param_decl_list RPAREN BEGIN func_body END"""
     pass
@@ -97,7 +89,6 @@ def p_func_body(p):
     pass
 
 ## Statement List
-
 def p_stmt_list(p):
     """stmt_list : stmt stmt_list
     | empty"""
@@ -117,34 +108,27 @@ def p_base_stmt(p):
     pass
 
 ## Basic Statements
-
-#"""assign_stmt : assign_expr ;"""
 def p_assign_stmt(p):
     """assign_stmt : assign_expr SEMI"""
     pass
 
-# """assign_expr : id := expr"""
 def p_assign_expr(p):
     """assign_expr : id ASSIGN expr"""
     pass
 
-# """read_stmt : READ ( id_list );"""
 def p_read_stmt(p):
     """read_stmt : READ LPAREN id_list RPAREN SEMI"""
     pass
 
-# """write_stmt : WRITE ( id_list );"""
 def p_write_stmt(p):
     """write_stmt : WRITE LPAREN id_list RPAREN SEMI"""
     pass
 
-# """return_stmt : RETURN expr ;"""
 def p_return_stmt(p):
     """return_stmt : RETURN expr SEMI"""
     pass
 
 ## Expressions
-
 def p_expr(p):
     """expr : expr_prefix factor"""
     pass
@@ -168,7 +152,6 @@ def p_postfix_expr(p):
     | call_expr"""
     pass
 
-#"""call_expr : id ( expr_list )"""
 def p_call_expr(p):
     """call_expr : id LPAREN expr_list RPAREN"""
     pass
@@ -178,13 +161,11 @@ def p_expr_list(p):
     | empty"""
     pass
 
-#"""expr_list_tail : , expr expr_list_tail | empty"""
 def p_expt_list_tail(p):
     """expr_list_tail : COMMA expr expr_list_tail
     | empty"""
     pass
 
-# """primary : ( expr ) | id | INTLITERAL | FLOATLITERAL"""
 def p_primary(p):
     """primary : LPAREN expr RPAREN
     | id
@@ -205,8 +186,6 @@ def p_mulop(p):
     pass
 
 ## Complex Statements and Condition
-
-# """if_stmt : IF ( cond ) decl stmt_list else_part ENDIF"""
 def p_if_stmt(p):
     """if_stmt : IF LPAREN cond RPAREN decl stmt_list else_part ENDIF"""
     pass
@@ -220,13 +199,11 @@ def p_cond(p):
     """cond : expr compop expr"""
     pass
 
-# """compop : < | > | = | != | <= | >="""
 def p_compop(p):
     """compop : COMPOP"""
     pass
 
 ## While statements
-
 def p_while_stmt(p):
     """while_stmt : WHILE LPAREN cond RPAREN decl stmt_list ENDWHILE"""
     pass
@@ -236,9 +213,13 @@ def p_empty(p):
     pass
 
 def p_error(p):
-    raise SyntaxError('Syntax error in input: %s' % p)
+    print("Not accepted")
+    global error
+    error = True
 
-parser = yacc.yacc(debug=1)
+parser = yacc.yacc()
 
 result = parser.parse(data)
-print(result)
+
+if not error:
+    print("Accepted")
