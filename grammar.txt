@@ -5,7 +5,7 @@ small case symbols are non-terminals.
 program           -> PROGRAM id BEGIN pgm_body END 
 id                -> IDENTIFIER
 pgm_body          -> decl func_declarations
-decl		        -> string_decl decl | var_decl decl | empty
+decl              -> string_decl decl | var_decl decl | empty
 
 /* Global String Declaration */
 string_decl       -> STRING id := str ;
@@ -13,7 +13,7 @@ str               -> STRINGLITERAL
 
 /* Variable Declaration */
 var_decl          -> var_type id_list ;
-var_type	        -> FLOAT | INT
+var_type          -> FLOAT | INT
 any_type          -> var_type | VOID 
 id_list           -> id id_tail
 id_tail           -> , id id_tail | empty
