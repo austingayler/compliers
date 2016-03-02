@@ -181,7 +181,7 @@ def t_PROGRAM(t):
     return t
 
 def t_STRINGLITERAL(t):
-    r'(\".*\")|(\'.*\')'
+    r'(\".*?\")|(\'.*?\')'
     writeOut("STRINGLITERAL", t.value)
     return t
 

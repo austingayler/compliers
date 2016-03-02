@@ -4,4 +4,4 @@
 # run with "./Micro"
 # might need to do a chmod +x Micro
 
-python3 parser.py $1
+python parser.py $1
