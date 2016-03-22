@@ -5,3 +5,5 @@ __pycache__/
 */usertest/*
 parser.out
 parsetab.py
+parsetab.pyc
+scanner.pyc
