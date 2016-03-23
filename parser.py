@@ -7,6 +7,8 @@ data = scanner.data
 
 error = False
 assigning = False
+varType = None
+curScope = None
 
 ## PROGRAM
 def p_program(p):
@@ -19,7 +21,7 @@ def p_id(p):
         # print p[1].strip()
         sym_id = p[1].strip()
         sym = Symbol(sym_id, 42, "STRING") #placeholder values
-        symbolTable.put(sym)
+        symbolTable.putSymbol(sym)
         assigning = False
 
 def p_pgm_body(p):
