@@ -42,5 +42,5 @@ class SymbolTable(object):
             print(output)
 
 
-symbolTable = SymbolTable(None, "GLOBAL")
+symbolTable = SymbolTable("GLOBAL")
 scopeStack = ["GLOBAL"]
