@@ -1,5 +1,8 @@
+from pprint import pprint
+
 class Symbol:
-    def __init__(self, value, type):
+    def __init__(self, name, value, type):
+        self.name = name
         self.value = value
         self.type = type
 
@@ -27,6 +30,14 @@ class SymbolTable(object):
 
     def getParentScope(self):
         return self.parent
+
+    def printSymbols(self):
+        for key in self.symbols:
+            sym = self.get(key)
+            output = "name " + sym.name + " type " + str(sym.type)
+            if sym.value is not None:
+                output = output + " value " + str(sym.value)
+            print(output)
 
 
 symbolTable = SymbolTable(None, "GLOBAL")

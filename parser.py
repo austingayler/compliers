@@ -1,6 +1,6 @@
 import ply.yacc as yacc
 import scanner
-import symboltable
+from symboltable import *
 
 tokens = scanner.tokens
 data = scanner.data
@@ -16,7 +16,10 @@ def p_id(p):
     'id : IDENTIFIER'
     global assigning
     if assigning is True:
-        print p[1].strip()
+        # print p[1].strip()
+        sym_id = p[1].strip()
+        sym = Symbol(sym_id, 42, "STRING") #placeholder values
+        symbolTable.put(sym)
         assigning = False
 
 def p_pgm_body(p):
@@ -193,6 +196,9 @@ def p_error(p):
 parser = yacc.yacc()
 
 result = parser.parse(data)
+
+
+symbolTable.printSymbols()
 
 if not error:
     print("Accepted")
