@@ -1,10 +1,12 @@
 import ply.yacc as yacc
 import scanner
+import symboltable
 
 tokens = scanner.tokens
 data = scanner.data
 
 error = False
+assigning = False
 
 ## PROGRAM
 def p_program(p):
@@ -12,6 +14,10 @@ def p_program(p):
 
 def p_id(p):
     'id : IDENTIFIER'
+    global assigning
+    if assigning is True:
+        print p[1].strip()
+        assigning = False
 
 def p_pgm_body(p):
     'pgm_body : decl func_declarations'
@@ -27,14 +33,19 @@ def p_string_decl(p):
 
 def p_str(p):
     'str : STRINGLITERAL'
+    global assigning
+    assigning = True
 
 ## Variable Declaration
 def p_var_decl(p):
     'var_decl : var_type id_list SEMI'
+    global assigning
+    assigning = True
 
 def p_var_type(p):
     """var_type : FLOAT
     | INT"""
+
 
 def p_any_type(p):
     """any_type : var_type
@@ -42,10 +53,13 @@ def p_any_type(p):
 
 def p_id_list(p):
     'id_list : id id_tail'
+    global assigning
+    assigning = True
 
 def p_id_tail(p):
     """id_tail : COMMA id id_tail
     | empty"""
+
 
 ## Function Paramater List
 def p_param_decl_list(p):
@@ -54,6 +68,8 @@ def p_param_decl_list(p):
 
 def p_param_decl(p):
     'param_decl : var_type id'
+    global assigning
+    assigning = True
 
 def p_param_decl_tail(p):
     """param_decl_tail : COMMA param_decl param_decl_tail

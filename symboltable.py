@@ -1,13 +1,13 @@
 class Symbol:
-    def __init__(self, name, type):
-        self.name = name
+    def __init__(self, value, type):
+        self.value = value
         self.type = type
 
 class SymbolTable(object):
 
-    def __init__(self, parent, name): # parent scope and symbol table name
+    def __init__(self, parent, scope_name): # parent scope and symbol table name
         self.symbols = {}
-        self.name = name
+        self.scope_name = scope_name
         self.parent = parent
 
     def put(self, symbol): # put variable symbol or fundef under <name> entry
@@ -25,6 +25,9 @@ class SymbolTable(object):
         else:
             return None
 
-
     def getParentScope(self):
         return self.parent
+
+
+symbolTable = SymbolTable(None, "GLOBAL")
+scopeStack = ["GLOBAL"]
