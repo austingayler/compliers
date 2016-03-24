@@ -1,14 +1,32 @@
 import ply.yacc as yacc
 import scanner
-from symboltable import *
+import symboltable
 
 tokens = scanner.tokens
 data = scanner.data
 
 error = False
-assigning = False
 varType = None
 curScope = None
+
+symTable = symboltable.SymbolTable("GLOBAL")
+
+
+def add_to_symbol(p, assigning):
+    # for val in p:
+    #     print(str(val).strip() + ", ", end="")
+    # print()
+    try:
+        sym_id = p[1].strip()
+        sym= symboltable.Symbol(sym_id, 42, assigning)
+        symTable.putSymbol(sym)
+    except IndexError as ie:
+        print("indexError")
+        print(ie)
+    except AttributeError as ae:
+        print("AttributeError")
+        print(ae)
+
 
 ## PROGRAM
 def p_program(p):
@@ -16,13 +34,8 @@ def p_program(p):
 
 def p_id(p):
     'id : IDENTIFIER'
-    global assigning
-    if assigning is True:
-        # print p[1].strip()
-        sym_id = p[1].strip()
-        sym = Symbol(sym_id, 42, "STRING") #placeholder values
-        symbolTable.putSymbol(sym)
-        assigning = False
+    # print("add_to_symbol(p, \"id\")")
+    add_to_symbol(p, "id")
 
 def p_pgm_body(p):
     'pgm_body : decl func_declarations'
@@ -38,28 +51,28 @@ def p_string_decl(p):
 
 def p_str(p):
     'str : STRINGLITERAL'
-    global assigning
-    assigning = True
+    add_to_symbol(p, "str")
+    # print("add_to_symbol(p, \"str\")")
 
 ## Variable Declaration
 def p_var_decl(p):
     'var_decl : var_type id_list SEMI'
-    global assigning
-    assigning = True
 
 def p_var_type(p):
     """var_type : FLOAT
     | INT"""
+    add_to_symbol(p, "var_type")
+    #print("add_to_symbol(p, \"var_type\")")
 
 
 def p_any_type(p):
     """any_type : var_type
     | VOID"""
+    add_to_symbol(p, "any_type")
+    #print("add_to_symbol(p, \"any_type\")")
 
 def p_id_list(p):
     'id_list : id id_tail'
-    global assigning
-    assigning = True
 
 def p_id_tail(p):
     """id_tail : COMMA id id_tail
@@ -73,8 +86,6 @@ def p_param_decl_list(p):
 
 def p_param_decl(p):
     'param_decl : var_type id'
-    global assigning
-    assigning = True
 
 def p_param_decl_tail(p):
     """param_decl_tail : COMMA param_decl param_decl_tail
@@ -87,6 +98,8 @@ def p_func_declarations(p):
 
 def p_func_decl(p):
     """func_decl : FUNCTION any_type id LPAREN param_decl_list RPAREN BEGIN func_body END"""
+    add_to_symbol(p, "function")
+    #print("add_to_symbol(p, \"function\")")
 
 def p_func_body(p):
     'func_body : decl stmt_list'
@@ -199,8 +212,8 @@ parser = yacc.yacc()
 
 result = parser.parse(data)
 
-
-symbolTable.printSymbols()
+print("printing_symbols!!!")
+symTable.printSymbols()
 
 if not error:
     print("Accepted")
