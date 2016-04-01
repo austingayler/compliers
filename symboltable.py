@@ -1,5 +1,6 @@
 class Symbol:
-    def __init__(self, name, value, type):
+    #def __init__(self, name, value, type):
+    def __init__(self, name=None, value=None, type=None):
         self.name = name
         self.value = value
         self.type = type
@@ -8,9 +9,9 @@ class Symbol:
 class SymbolTable(object):
     # each symbol table has a list of symbols it contains and a list of sub symbol tables (scopes)
     def __init__(self, scope_name):
-        self.symbols = []
-        self.scope_name = scope_name
-        self.subScopes = []
+        self.symbols = None
+        self.name = scope_name
+        self.sub_scopes = []
         self.parent = None  # this might be useful to have? Idk
 
     def putSymbol(self, symbol):  # put variable symbol or fundef under <name> entry
@@ -22,7 +23,7 @@ class SymbolTable(object):
             self.symbols.append(symbol)
             return True
 
-    def getParentScope(self):
+    def getParent(self):
         return self.parent
 
     def printSymbols(self):
@@ -32,3 +33,17 @@ class SymbolTable(object):
             if sym.value is not None:
                 output = output + " value " + str(sym.value)
             print(output)
+
+    def print_symbols(self, scope):
+        for sym in scope.symbols.items:
+            output = ("name \"" + sym.name.strip() + "\"").ljust(20)# + (" type " + str(sym.type)).ljust(20)
+            # output = ("name \n" + sym.name + " \"")
+            # if sym.value is not None:
+            #     output = output + " value " + str(sym.value)
+            print(output)
+
+    def print_scope_stack(self, root):
+        print("Symbol Table", root.name)
+        # self.print_symbols(root)
+        for scope in root.sub_scopes:
+            self.print_scope_stack(scope)

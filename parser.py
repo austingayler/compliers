@@ -1,15 +1,18 @@
 import ply.yacc as yacc
 import scanner
 import symboltable
+import Stack
 
 tokens = scanner.tokens
 data = scanner.data
+scope_type = None
+asgn_type = None
 
+counter = 0
 error = False
-varType = None
-curScope = None
 
-symTable = symboltable.SymbolTable("GLOBAL")
+cur_scope = symboltable.SymbolTable("GLOBAL")
+cur_scope.symbols = Stack.Stack()
 
 
 def add_to_symbol(p, assigning):
@@ -19,7 +22,7 @@ def add_to_symbol(p, assigning):
     try:
         sym_id = p[1].strip()
         sym= symboltable.Symbol(sym_id, 42, assigning)
-        symTable.putSymbol(sym)
+        cur_scope.putSymbol(sym)
     except IndexError as ie:
         print("indexError")
         print(ie)
@@ -34,8 +37,13 @@ def p_program(p):
 
 def p_id(p):
     'id : IDENTIFIER'
+    global scope_type
+    global sym_type
     # print("add_to_symbol(p, \"id\")")
-    add_to_symbol(p, "id")
+    if scope_type:
+        print("renaming scope \"" + cur_scope.name + "\" to", p[1])
+        cur_scope.name = p[1]
+        scope_type = None
 
 def p_pgm_body(p):
     'pgm_body : decl func_declarations'
@@ -49,9 +57,9 @@ def p_decl(p):
 def p_string_decl(p):
     'string_decl : STRING id ASSIGN str SEMI'
 
+
 def p_str(p):
     'str : STRINGLITERAL'
-    add_to_symbol(p, "str")
     # print("add_to_symbol(p, \"str\")")
 
 ## Variable Declaration
@@ -61,14 +69,21 @@ def p_var_decl(p):
 def p_var_type(p):
     """var_type : FLOAT
     | INT"""
-    add_to_symbol(p, "var_type")
     #print("add_to_symbol(p, \"var_type\")")
 
 
 def p_any_type(p):
     """any_type : var_type
     | VOID"""
-    add_to_symbol(p, "any_type")
+    global cur_scope
+    global scope_type
+    scope_type = "FUNC"
+    # add_to_symbol(p, "any_type")
+    func_sym_table = symboltable.SymbolTable("")
+    cur_scope.sub_scopes.append(func_sym_table)
+    func_sym_table.parent = cur_scope
+    cur_scope = func_sym_table
+    print("new scope \"" + func_sym_table.name + "\" which has a parent", cur_scope.getParent().name)
     #print("add_to_symbol(p, \"any_type\")")
 
 def p_id_list(p):
@@ -98,7 +113,7 @@ def p_func_declarations(p):
 
 def p_func_decl(p):
     """func_decl : FUNCTION any_type id LPAREN param_decl_list RPAREN BEGIN func_body END"""
-    add_to_symbol(p, "function")
+    endScope()
     #print("add_to_symbol(p, \"function\")")
 
 def p_func_body(p):
@@ -184,14 +199,20 @@ def p_mulop(p):
 
 ## Complex Statements and Condition
 def p_if_stmt(p):
+
     """if_stmt : IF LPAREN cond RPAREN decl stmt_list else_part ENDIF"""
+    endScope()
 
 def p_else_part(p):
     """else_part : ELSE decl stmt_list
     | empty"""
+    if (p[1]):
+        newScope()
 
 def p_cond(p):
     """cond : expr compop expr"""
+    newScope()
+
 
 def p_compop(p):
     """compop : COMPOP"""
@@ -199,6 +220,7 @@ def p_compop(p):
 ## While statements
 def p_while_stmt(p):
     """while_stmt : WHILE LPAREN cond RPAREN decl stmt_list ENDWHILE"""
+    endScope()
 
 def p_empty(p):
     'empty :'
@@ -208,12 +230,30 @@ def p_error(p):
     global error
     error = True
 
+def endScope():
+    global cur_scope
+    if cur_scope.getParent():
+        print("getting parent scope of", cur_scope.name, end=" ")
+        print("which is", cur_scope.getParent().name)
+        cur_scope = cur_scope.getParent()
+
+def newScope():
+    global counter
+    global cur_scope
+    counter += 1
+    cond_sym_table = symboltable.SymbolTable("BLOCK " + str(counter))
+    cur_scope.sub_scopes.append(cond_sym_table)
+    cond_sym_table.parent = cur_scope
+    cur_scope = cond_sym_table
+    print("new scope", cond_sym_table.name, "which has a parent", cur_scope.getParent().name)
+
 parser = yacc.yacc()
 
 result = parser.parse(data)
 
-print("printing_symbols!!!")
-symTable.printSymbols()
+endScope()
+print()
+cur_scope.print_scope_stack(cur_scope)
 
 if not error:
     print("Accepted")
