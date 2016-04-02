@@ -5,31 +5,14 @@ import Stack
 
 tokens = scanner.tokens
 data = scanner.data
-scope_type = None
-asgn_type = None
 
 counter = 0
 error = False
 
-cur_scope = symboltable.SymbolTable("GLOBAL")
-cur_scope.symbols = Stack.Stack()
+global_scope = symboltable.SymbolTable("GLOBAL")
 
-
-def add_to_symbol(p, assigning):
-    # for val in p:
-    #     print(str(val).strip() + ", ", end="")
-    # print()
-    try:
-        sym_id = p[1].strip()
-        sym= symboltable.Symbol(sym_id, 42, assigning)
-        cur_scope.putSymbol(sym)
-    except IndexError as ie:
-        print("indexError")
-        print(ie)
-    except AttributeError as ae:
-        print("AttributeError")
-        print(ae)
-
+scope_stack = Stack.Stack()
+scope_stack.push(global_scope)
 
 ## PROGRAM
 def p_program(p):
@@ -37,13 +20,11 @@ def p_program(p):
 
 def p_id(p):
     'id : IDENTIFIER'
-    global scope_type
-    global sym_type
-    # print("add_to_symbol(p, \"id\")")
-    if scope_type:
+    if scope_stack.peek().name == "FUNC":
+        cur_scope = scope_stack.pop()
         print("renaming scope \"" + cur_scope.name + "\" to", p[1])
         cur_scope.name = p[1]
-        scope_type = None
+        scope_stack.push(cur_scope)
 
 def p_pgm_body(p):
     'pgm_body : decl func_declarations'
@@ -57,10 +38,8 @@ def p_decl(p):
 def p_string_decl(p):
     'string_decl : STRING id ASSIGN str SEMI'
 
-
 def p_str(p):
     'str : STRINGLITERAL'
-    # print("add_to_symbol(p, \"str\")")
 
 ## Variable Declaration
 def p_var_decl(p):
@@ -69,22 +48,11 @@ def p_var_decl(p):
 def p_var_type(p):
     """var_type : FLOAT
     | INT"""
-    #print("add_to_symbol(p, \"var_type\")")
-
 
 def p_any_type(p):
     """any_type : var_type
     | VOID"""
-    global cur_scope
-    global scope_type
-    scope_type = "FUNC"
-    # add_to_symbol(p, "any_type")
-    func_sym_table = symboltable.SymbolTable("")
-    cur_scope.sub_scopes.append(func_sym_table)
-    func_sym_table.parent = cur_scope
-    cur_scope = func_sym_table
-    print("new scope \"" + func_sym_table.name + "\" which has a parent", cur_scope.getParent().name)
-    #print("add_to_symbol(p, \"any_type\")")
+    new_func_scope()
 
 def p_id_list(p):
     'id_list : id id_tail'
@@ -92,7 +60,6 @@ def p_id_list(p):
 def p_id_tail(p):
     """id_tail : COMMA id id_tail
     | empty"""
-
 
 ## Function Paramater List
 def p_param_decl_list(p):
@@ -113,8 +80,7 @@ def p_func_declarations(p):
 
 def p_func_decl(p):
     """func_decl : FUNCTION any_type id LPAREN param_decl_list RPAREN BEGIN func_body END"""
-    endScope()
-    #print("add_to_symbol(p, \"function\")")
+    end_scope()
 
 def p_func_body(p):
     'func_body : decl stmt_list'
@@ -199,20 +165,17 @@ def p_mulop(p):
 
 ## Complex Statements and Condition
 def p_if_stmt(p):
-
-    """if_stmt : IF LPAREN cond RPAREN decl stmt_list else_part ENDIF"""
-    endScope()
+    """if_stmt : IF LPAREN cond RPAREN decl stmt_list end_if else_part ENDIF"""
 
 def p_else_part(p):
-    """else_part : ELSE decl stmt_list
+    """else_part : ELSE else_scope decl stmt_list
     | empty"""
     if (p[1]):
-        newScope()
+        end_scope()
 
 def p_cond(p):
     """cond : expr compop expr"""
-    newScope()
-
+    new_cond_scope()
 
 def p_compop(p):
     """compop : COMPOP"""
@@ -220,40 +183,50 @@ def p_compop(p):
 ## While statements
 def p_while_stmt(p):
     """while_stmt : WHILE LPAREN cond RPAREN decl stmt_list ENDWHILE"""
-    endScope()
+    end_scope()
 
 def p_empty(p):
     'empty :'
+
+## Scoping
+def p_else_scope(p):
+    """else_scope : empty"""
+    new_cond_scope()
+
+def p_end_if(p):
+    """end_if : empty"""
+    end_scope()
 
 def p_error(p):
     print("Not accepted")
     global error
     error = True
 
-def endScope():
-    global cur_scope
-    if cur_scope.getParent():
-        print("getting parent scope of", cur_scope.name, end=" ")
-        print("which is", cur_scope.getParent().name)
-        cur_scope = cur_scope.getParent()
-
-def newScope():
+def new_cond_scope():
     global counter
-    global cur_scope
+    cond_sym_table = symboltable.SymbolTable("")
     counter += 1
-    cond_sym_table = symboltable.SymbolTable("BLOCK " + str(counter))
-    cur_scope.sub_scopes.append(cond_sym_table)
-    cond_sym_table.parent = cur_scope
-    cur_scope = cond_sym_table
-    print("new scope", cond_sym_table.name, "which has a parent", cur_scope.getParent().name)
+    cond_sym_table.name = "BLOCK " + str(counter)
+    print("new scope", cond_sym_table.name, "which has a parent", scope_stack.peek().name)
+    scope_stack.push(cond_sym_table)
+
+def new_func_scope():
+    func_sym_table = symboltable.SymbolTable("FUNC")
+    print("new scope", func_sym_table.name, "which has a parent", scope_stack.peek().name)
+    scope_stack.push(func_sym_table)
+
+def end_scope():
+    if not scope_stack.is_empty():
+        cur_scope = scope_stack.pop()
+        print("getting parent scope of", cur_scope.name, end=" ")
+        print("which is", scope_stack.peek().name)
+    else:
+        print("Stack is empty")
 
 parser = yacc.yacc()
 
 result = parser.parse(data)
 
-endScope()
-print()
-cur_scope.print_scope_stack(cur_scope)
 
 if not error:
     print("Accepted")

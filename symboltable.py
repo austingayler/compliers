@@ -11,8 +11,6 @@ class SymbolTable(object):
     def __init__(self, scope_name):
         self.symbols = None
         self.name = scope_name
-        self.sub_scopes = []
-        self.parent = None  # this might be useful to have? Idk
 
     def putSymbol(self, symbol):  # put variable symbol or fundef under <name> entry
         if symbol.name in self.symbols:
@@ -22,9 +20,6 @@ class SymbolTable(object):
             # print("appending", symbol.name, "to", self.symbols)
             self.symbols.append(symbol)
             return True
-
-    def getParent(self):
-        return self.parent
 
     def printSymbols(self):
         for sym in self.symbols:
