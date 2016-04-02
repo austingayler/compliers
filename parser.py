@@ -41,7 +41,12 @@ def p_id(p):
         id_stack.push(p[1].strip())
 
 def p_pgm_body(p):
-    'pgm_body : decl func_declarations'
+    'pgm_body : pgm_body_var_decl_part decl func_declarations'
+
+def p_pgm_body_var_decl_part(p):
+    'pgm_body_var_decl_part : empty'
+    global list_var_decl
+    list_var_decl = True
 
 def p_decl(p):
     """decl : string_decl decl
