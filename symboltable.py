@@ -18,7 +18,8 @@ class SymbolTable(object):
         self.parent = None
 
     def add_symbol(self, symbol):
-        output = ("name \"" + symbol.name + "\"").ljust(20) + (" type " + str(symbol.type)).ljust(20)
+        # output = ("name \"" + symbol.name + "\"").ljust(20) + (" type " + str(symbol.type)).ljust(20) #nice formatting
+        output = "name " + symbol.name + " type " + str(symbol.type)
         if symbol.value is not None:
             output = output + " value " + str(symbol.value)
         print(output)

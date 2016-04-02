@@ -35,6 +35,7 @@ def p_id(p):
             print("renaming scope \"" + cur_scope.name + "\" to", p[1])
         cur_scope.name = p[1].strip()
         scope_stack.push(cur_scope)
+        print("\nSymbol table", cur_scope.name)
 
     else:
         id_stack.push(p[1].strip())
@@ -260,7 +261,7 @@ def new_func_scope():
         print("new scope", func_sym_table.name, "which has a parent", scope_stack.peek().name)
     scope_stack.push(func_sym_table)
 
-    print("\nSymbol table", func_sym_table.name)
+
 
 def end_scope():
     if not scope_stack.is_empty():
@@ -283,5 +284,5 @@ result = parser.parse(data)
 # print("\nComplete symbol table:")
 # symbol_table.recursive_print_all_subtables(symbol_table, 0)
 
-if not error:
-    print("Accepted")
+#if not error:
+    #print("Accepted")
