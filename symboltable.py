@@ -12,7 +12,7 @@ class SymbolTable(object):
         self.symbols = None
         self.name = scope_name
 
-    def putSymbol(self, symbol):  # put variable symbol or fundef under <name> entry
+    def put_symbol(self, symbol):  # put variable symbol or fundef under <name> entry
         if symbol.name in self.symbols:
             # print(symbol.name, "in", self.symbols)
             return False
@@ -21,21 +21,13 @@ class SymbolTable(object):
             self.symbols.append(symbol)
             return True
 
-    def printSymbols(self):
+    def print_symbols(self):
         for sym in self.symbols:
             output = ("name \"" + sym.name + "\"").ljust(20) + (" type " + str(sym.type)).ljust(20)
-            #output = ("name \n" + sym.name + " \"")
             if sym.value is not None:
                 output = output + " value " + str(sym.value)
             print(output)
 
-    def print_symbols(self, scope):
-        for sym in scope.symbols.items:
-            output = ("name \"" + sym.name.strip() + "\"").ljust(20)# + (" type " + str(sym.type)).ljust(20)
-            # output = ("name \n" + sym.name + " \"")
-            # if sym.value is not None:
-            #     output = output + " value " + str(sym.value)
-            print(output)
 
     def print_scope_stack(self, root):
         print("Symbol Table", root.name)
