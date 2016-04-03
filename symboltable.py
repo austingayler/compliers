@@ -1,5 +1,5 @@
-from pprint import pprint
 import Stack
+
 
 class Symbol:
     def __init__(self, name, value, type):
@@ -7,9 +7,9 @@ class Symbol:
         self.value = value
         self.type = type
 
-class SymbolTable(object):
 
-    #each symbol table has a list of symbols it contains and a list of sub symbol tables (scopes)
+class SymbolTable(object):
+    # each symbol table has a list of symbols it contains and a list of sub symbol tables (scopes)
     def __init__(self, name):
         self.name = name
         self.symbols = Stack.Stack()
