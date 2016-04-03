@@ -19,5 +19,17 @@ class SymbolTable(object):
         output = "name " + symbol.name + " type " + str(symbol.type)
         if symbol.value is not None:
             output = output + " value " + str(symbol.value)
-        print(output)
-        self.symbols.push(symbol)
+
+        duplicate_exists = self.check_duplicate(symbol)
+        if duplicate_exists:
+            quit()
+        else:
+            print(output)
+            self.symbols.push(symbol)
+
+    def check_duplicate(self, symbol):
+        for sym in self.symbols.items:
+            if symbol.name == sym.name:
+                print("DECLARATION ERROR", symbol.name)
+                return True
+        return False
