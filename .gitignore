@@ -6,3 +6,4 @@ parser.out
 parsetab.py
 parsetab.pyc
 scanner.pyc
+.DS_STORE
