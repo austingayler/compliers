@@ -8,9 +8,9 @@ BEGIN
 	FUNCTION INT F (INT n)
 	BEGIN
           INT n1;
-          
+
           n1 := n;
-          
+
 		IF (n1 > 2)
 			RETURN F(n1-1)+F(n1-2);
 		ENDIF
@@ -21,8 +21,8 @@ BEGIN
 		ENDIF
 
 	END
-	
-	
+
+
 	FUNCTION VOID main ()
 	BEGIN
 		INT i, end, result;
@@ -34,9 +34,9 @@ BEGIN
 		result := F(i);
 		WRITE (i,space);
 		WRITE (result,eol);
-		i := i + 1;	
+		i := i + 1;
 	ENDWHILE
 
 	END
 
-END	
+END

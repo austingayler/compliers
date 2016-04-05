@@ -1,30 +1,35 @@
+import Stack
+
+
 class Symbol:
-    def __init__(self, name, type):
+    def __init__(self, name, value, type):
         self.name = name
+        self.value = value
         self.type = type
 
+
 class SymbolTable(object):
-
-    def __init__(self, parent, name): # parent scope and symbol table name
-        self.symbols = {}
+    # each symbol table has a list of symbols it contains and a list of sub symbol tables (scopes)
+    def __init__(self, name):
         self.name = name
-        self.parent = parent
+        self.symbols = Stack.Stack()
 
-    def put(self, symbol): # put variable symbol or fundef under <name> entry
-        if self.symbols.__contains__(symbol.name):
-            return False
+    def add_symbol(self, symbol):
+        # output = ("name \"" + symbol.name + "\"").ljust(20) + (" type " + str(symbol.type)).ljust(20) #nice formatting
+        output = "name " + symbol.name + " type " + str(symbol.type)
+        if symbol.value is not None:
+            output = output + " value " + str(symbol.value)
+
+        duplicate_exists = self.check_duplicate(symbol)
+        if duplicate_exists:
+            quit()
         else:
-            self.symbols[symbol.name]= symbol
-            return True
+            print(output)
+            self.symbols.push(symbol)
 
-    def get(self, name): # get variable symbol or fundef from <name> entry
-        if self.symbols.__contains__(name):
-            return self.symbols[name]
-        elif self.parent:
-            return self.parent.get(name)
-        else:
-            return None
-
-
-    def getParentScope(self):
-        return self.parent
+    def check_duplicate(self, symbol):
+        for sym in self.symbols.items:
+            if symbol.name == sym.name:
+                print("DECLARATION ERROR", symbol.name)
+                return True
+        return False
