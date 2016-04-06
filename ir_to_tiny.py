@@ -1,4 +1,3 @@
-import pprint
 import sys
 
 import Node
@@ -41,9 +40,6 @@ def build_ir_node(instructions_list):
         ir_node_list.append(node)
 
 
-# MULTI a b $T4
-# move a r3
-# muli b r3
 def transpile(ir_node_list):
     name_map = {"STOREI": "move", "MULTI": "muli", "ADDI": "addi", "DIVI": "divi", "WRITEI": "sys writei",
                 "RET": "sys halt"}
@@ -80,6 +76,7 @@ def transpile(ir_node_list):
 
 
 def new_op(op1, op2="", op3 = ""):
+    # Strip "$T" from ir_node op codes and replace with "r". also decrement op values (may not be necessary).
     new_op1, new_op2, new_op3 = op1, op2, op3
     if "$T" in op1:
         new_op1 = "r" + str(int(op1[2:]) - 1)
@@ -95,8 +92,6 @@ def new_op(op1, op2="", op3 = ""):
 
 input = sys.argv[1]
 read_file(input)
-
-pp = pprint.PrettyPrinter(indent=4)
 
 for node in ir_node_list:
     print(vars(node))
