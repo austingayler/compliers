@@ -5,7 +5,6 @@ import Stack
 
 
 ir_node_list = []
-little_node_list = []
 
 
 def read_file(file_name):
@@ -41,6 +40,7 @@ def build_ir_node(instructions_list):
 
 
 def transpile(ir_node_list):
+    node_list = []
     name_map = {"STOREI": "move", "MULTI": "muli", "ADDI": "addi", "DIVI": "divi", "WRITEI": "sys writei",
                 "RET": "sys halt"}
     var_stack = Stack.Stack()
@@ -49,7 +49,7 @@ def transpile(ir_node_list):
         if ir_node.op_code == "STOREI":
             new_op1, new_op2, _ = new_op(ir_node.op1, ir_node.op2)
             node = Node.LittleNode("move", new_op1, new_op2)
-            little_node_list.append(node)
+            node_list.append(node)
             # add values to stack to append to the beginning of the little_list when done.
             if ir_node.op2.isalpha():
                 if ir_node.op2 not in seen_var_names:
@@ -60,19 +60,21 @@ def transpile(ir_node_list):
             new_op1, new_op2, new_result = new_op(ir_node.op1, ir_node.op2, ir_node.result)
             node0 = Node.LittleNode("move", new_op1, new_result)
             node1 = Node.LittleNode(name_map[ir_node.op_code], new_op2, new_result)
-            little_node_list.append(node0)
-            little_node_list.append(node1)
+            node_list.append(node0)
+            node_list.append(node1)
             pass
         elif ir_node.op_code in ["WRITEI", "RET"]:
             new_op1, _, _ = new_op(ir_node.op1)
             node = Node.LittleNode(name_map[ir_node.op_code], new_op1)
-            little_node_list.append(node)
+            node_list.append(node)
         else:
             print("ERROR - Unhandeled op_code:", ir_node.op_code)
 
     # put the variable declarations into the beginning of little_node_list in the correct order.
     for _ in range(len(var_stack.items)):
-        little_node_list.insert(0, var_stack.pop())
+        node_list.insert(0, var_stack.pop())
+
+    return node_list
 
 
 def new_op(op1, op2="", op3 = ""):
@@ -93,11 +95,7 @@ def new_op(op1, op2="", op3 = ""):
 input = sys.argv[1]
 read_file(input)
 
-for node in ir_node_list:
-    print(vars(node))
-
-print()
-transpile(ir_node_list)
+little_node_list = transpile(ir_node_list)
 
 for node in little_node_list:
     print(node.op_code, node.op1, node.op2)
