@@ -1,0 +1,39 @@
+var a
+var b
+var c
+move 20 r0
+move r0 a
+move 30 r1
+move r1 b
+move 40 r2
+move r2 c
+move a r3
+muli b r3
+move a r4
+muli b r4
+move r4 r5
+addi c r5
+move r5 r6
+divi a r6
+move 20 r7
+move c r8
+addi r3 r8
+move r8 r9
+addi r6 r9
+move r9 r10
+addi r7 r10
+move r10 c
+move b r11
+muli b r11
+move r11 r12
+addi a r12
+move r12 b
+move b r13
+muli a r13
+move r13 r14
+divi a r14
+move r14 a
+sys writei c
+sys writei b
+sys writei a
+sys halt
