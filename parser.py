@@ -1,7 +1,7 @@
 import Stack
 import ply.yacc as yacc
 import scanner
-import symboltable
+import Node
 
 tokens = scanner.tokens
 data = scanner.data
@@ -11,7 +11,7 @@ error = False
 
 debug = False
 
-global_scope = symboltable.SymbolTable("GLOBAL")
+global_scope = Node.SymbolTable("GLOBAL")
 print("Symbol table", global_scope.name)
 
 scope_stack = Stack.Stack()
@@ -69,7 +69,7 @@ def p_string_decl(p):
 
 def p_str(p):
     'str : STRINGLITERAL'
-    sym = symboltable.Symbol(id_stack.pop(), p[1].strip(), "STRING")
+    sym = Node.Symbol(id_stack.pop(), p[1].strip(), "STRING")
     scope_stack.peek().add_symbol(sym)
 
 
@@ -99,7 +99,7 @@ def p_id_list(p):
     global id_list_symbols
     if list_var_decl:
         for id_ in reversed(id_list_symbols):
-            sym = symboltable.Symbol(id_, None, cur_sym_type)
+            sym = Node.Symbol(id_, None, cur_sym_type)
             scope_stack.peek().add_symbol(sym)
         id_list_symbols = []
 
@@ -121,7 +121,7 @@ def p_param_decl_list(p):
 def p_param_decl(p):
     'param_decl : var_type id'
     global cur_sym_type
-    sym = symboltable.Symbol(id_stack.pop(), None, cur_sym_type)
+    sym = Node.Symbol(id_stack.pop(), None, cur_sym_type)
     scope_stack.peek().add_symbol(sym)
 
 
@@ -298,7 +298,7 @@ def p_error(p):
 
 def new_cond_scope():
     global counter
-    cond_sym_table = symboltable.SymbolTable("")
+    cond_sym_table = Node.SymbolTable("")
     counter += 1
     cond_sym_table.name = "BLOCK " + str(counter)
     if debug:
@@ -309,7 +309,7 @@ def new_cond_scope():
 
 
 def new_func_scope():
-    func_sym_table = symboltable.SymbolTable("FUNC")
+    func_sym_table = Node.SymbolTable("FUNC")
     if debug:
         print("new scope", func_sym_table.name, "which has a parent", scope_stack.peek().name)
     scope_stack.push(func_sym_table)
