@@ -31,6 +31,9 @@ def p_program(p):
 
 def p_id(p):
     'id : IDENTIFIER'
+
+    # print("Encountered ", p[1].strip(), "Scope stax name =", scope_stack.peek().name)
+
     if scope_stack.peek().name == "FUNC":
         cur_scope = scope_stack.pop()
         if debug:
@@ -44,11 +47,11 @@ def p_id(p):
 
 
 def p_pgm_body(p):
-    'pgm_body : pgm_body_var_decl_part decl func_declarations'
+    'pgm_body : pgm_body_var_decl_aux decl func_declarations'
 
 
-def p_pgm_body_var_decl_part(p):
-    'pgm_body_var_decl_part : empty'
+def p_pgm_body_var_decl_aux(p):
+    'pgm_body_var_decl_aux : empty'
     global list_var_decl
     list_var_decl = True
 
@@ -250,11 +253,11 @@ def p_mulop(p):
 
 ## Complex Statements and Condition
 def p_if_stmt(p):
-    """if_stmt : IF LPAREN cond RPAREN decl stmt_list end_if else_part ENDIF"""
+    """if_stmt : IF LPAREN cond RPAREN pgm_body_var_decl_aux decl stmt_list end_if else_part ENDIF"""
 
 
 def p_else_part(p):
-    """else_part : ELSE else_scope decl stmt_list
+    """else_part : ELSE pgm_body_var_decl_aux else_scope decl stmt_list
     | empty"""
     if (p[1]):
         end_scope()
@@ -271,7 +274,7 @@ def p_compop(p):
 
 ## While statements
 def p_while_stmt(p):
-    """while_stmt : WHILE LPAREN cond RPAREN decl stmt_list ENDWHILE"""
+    """while_stmt : WHILE LPAREN cond RPAREN pgm_body_var_decl_aux decl stmt_list ENDWHILE"""
     end_scope()
 
 
