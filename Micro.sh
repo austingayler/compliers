@@ -9,6 +9,6 @@ for i in $INPUTS
 		echo "Testing input file $i"
 		output="${name}Test.out"
 		outtest="${name}.out"
-		./Micro $i > Step3/usertest/$output
+		python3 parser.py $i > Step3/usertest/$output
 		diff -b -s Step3/usertest/$output Step3/outputs/$outtest
 	done

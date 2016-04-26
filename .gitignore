@@ -4,7 +4,7 @@ __pycache__/
 */usertest/*
 parser.out
 parsetab.py
-parsetab.pyc
-scanner.pyc
-Stack.pyc
-symboltable.pyc
+*.pyc
+.DS_STORE
+tiny
+*.zip
