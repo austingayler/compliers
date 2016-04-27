@@ -50,6 +50,21 @@ class IRNode:
         self.op1 = op1
         self.op2 = op2
         self.result = result
+    
+    def print_node(self):
+        out = self.op_code
+        
+        if out is None:
+            out = "OP_CODE" + " "
+        else:
+            out += " "
+        if self.op1 is not None:
+            out = out + self.op1 + " "
+        if self.op2 is not None:
+            out += self.op2 + " "
+        if self.result is not None:
+            out += self.result + " "
+        print(out)
 
 
 class LittleNode:

@@ -23,6 +23,7 @@ id_stack = Stack.Stack()
 cur_sym_type = None
 id_list_symbols = []
 list_var_decl = False
+cur_irnode = None
 
 
 ## PROGRAM
@@ -36,17 +37,28 @@ def p_id(p):
 
     # print("Encountered ", p[1].strip(), "Scope stax name =", scope_stack.peek().name)
 
+    id = p[1].strip()
+    
     if scope_stack.peek().name == "FUNC":
         cur_scope = scope_stack.pop()
         if debug is 3:
-            print("renaming scope \"" + cur_scope.name + "\" to", p[1])
-        cur_scope.name = p[1].strip()
+            print("renaming scope \"" + cur_scope.name + "\" to", id)
+        cur_scope.name = id
         scope_stack.push(cur_scope)
         if debug is 3:
             print("\nSymbol table", cur_scope.name)
         
     else:
-        id_stack.push(p[1].strip())
+        id_stack.push(id)
+        
+        global cur_irnode
+        if cur_irnode is None:
+            cur_irnode = Node.IRNode(None, id, None, None)
+        else:
+            if cur_irnode.op1 is None:
+                cur_irnode.op1 = id
+            else:
+                cur_irnode.op2 = id
 
 
 def p_pgm_body(p):
@@ -57,6 +69,9 @@ def p_pgm_body_var_decl_aux(p):
     'pgm_body_var_decl_aux : empty'
     global list_var_decl
     list_var_decl = True
+
+    global cur_irnode
+    cur_irnode = None
 
 
 def p_decl(p):
@@ -182,10 +197,11 @@ def p_assign_stmt(p):
 
 def p_assign_expr(p):
     """assign_expr : id ASSIGN expr"""
-    if debug is 4:
-        out = ";STOREI " + id_stack.peek() + " "  + scope_stack.peek().get_last_symbol()
-        print(out)
-
+    global cur_irnode
+    if cur_irnode.op_code is None:
+        cur_irnode.op_code = p[2].strip()
+    cur_irnode.print_node()
+    cur_irnode = None
 
 def p_read_stmt(p):
     """read_stmt : READ LPAREN id_list RPAREN SEMI"""
@@ -193,16 +209,6 @@ def p_read_stmt(p):
 
 def p_write_stmt(p):
     """write_stmt : WRITE LPAREN id_list RPAREN SEMI"""
-    out = ""
-    try:
-        if scope_stack.peek().symbols.peek().value is "INTEGER":
-            out += "WRITEI"
-        elif scope_stack.peek().symbols.peek().value is "INTEGER":
-            out += "WRITEF"
-        out += scope_stack.peek().symbols.peek().name    
-        print(out)
-    except:
-        pass
 
 
 def p_return_stmt(p):
@@ -251,19 +257,24 @@ def p_primary(p):
     | id
     | INTLITERAL
     | FLOATLITERAL"""
+    if len(p) == 2 and p[1] is not None:    
+        global cur_irnode
+        cur_irnode.result = p[1].strip()
 
 
 # """addop : + | -"""
 def p_addop(p):
     """addop : PLUS
     | MINUS"""
-
+    global cur_irnode
+    cur_irnode.op_code = p[1].strip()
 
 # """mulop :  | /"""
 def p_mulop(p):
     """mulop : TIMES
     | DIVIDE"""
-
+    global cur_irnode
+    cur_irnode.op_code = p[1].strip()
 
 ## Complex Statements and Condition
 def p_if_stmt(p):
