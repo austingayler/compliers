@@ -9,10 +9,12 @@ class Symbol:
 
 
 class SymbolTable(object):
+    
     # each symbol table has a list of symbols it contains and a list of sub symbol tables (scopes)
     def __init__(self, name):
         self.name = name
         self.symbols = Stack.Stack()
+        self.debug = 4
 
     def add_symbol(self, symbol):
         # output = ("name \"" + symbol.name + "\"").ljust(20) + (" type " + str(symbol.type)).ljust(20) #nice formatting
@@ -24,7 +26,8 @@ class SymbolTable(object):
         if duplicate_exists:
             quit()
         else:
-            print(output)
+            if self.debug is 3:
+                print(output)
             self.symbols.push(symbol)
 
     def check_duplicate(self, symbol):
@@ -33,6 +36,12 @@ class SymbolTable(object):
                 print("DECLARATION ERROR", symbol.name)
                 return True
         return False
+        
+    def get_last_symbol(self):
+        if(self.symbols.size()):
+            return self.symbols.peek().value
+        else:
+            return ""
 
 
 class IRNode:

@@ -8,11 +8,13 @@ data = scanner.data
 
 counter = 0
 error = False
+register_count = 1
 
-debug = False
+debug = 4 #None, 3, 4
 
 global_scope = Node.SymbolTable("GLOBAL")
-print("Symbol table", global_scope.name)
+if debug is 3:
+    print("Symbol table", global_scope.name)
 
 scope_stack = Stack.Stack()
 scope_stack.push(global_scope)
@@ -26,7 +28,7 @@ list_var_decl = False
 ## PROGRAM
 def p_program(p):
     'program : PROGRAM id BEGIN pgm_body END'
-    end_scope()
+    #end_scope()
 
 
 def p_id(p):
@@ -36,12 +38,13 @@ def p_id(p):
 
     if scope_stack.peek().name == "FUNC":
         cur_scope = scope_stack.pop()
-        if debug:
+        if debug is 3:
             print("renaming scope \"" + cur_scope.name + "\" to", p[1])
         cur_scope.name = p[1].strip()
         scope_stack.push(cur_scope)
-        print("\nSymbol table", cur_scope.name)
-
+        if debug is 3:
+            print("\nSymbol table", cur_scope.name)
+        
     else:
         id_stack.push(p[1].strip())
 
@@ -143,10 +146,8 @@ def p_func_decl(p):
     """func_decl : FUNCTION any_type id LPAREN param_decl_list RPAREN BEGIN func_body END"""
     end_scope()
 
-
 def p_func_body(p):
     'func_body : list_var_decl_part decl stmt_list'
-
 
 def p_list_var_decl_part(p):
     'list_var_decl_part : empty'
@@ -176,18 +177,32 @@ def p_base_stmt(p):
 ## Basic Statements
 def p_assign_stmt(p):
     """assign_stmt : assign_expr SEMI"""
+    
 
 
 def p_assign_expr(p):
     """assign_expr : id ASSIGN expr"""
+    if debug is 4:
+        out = ";STOREI " + id_stack.peek() + " "  + scope_stack.peek().get_last_symbol()
+        print(out)
 
 
 def p_read_stmt(p):
     """read_stmt : READ LPAREN id_list RPAREN SEMI"""
-
+    
 
 def p_write_stmt(p):
     """write_stmt : WRITE LPAREN id_list RPAREN SEMI"""
+    out = ""
+    try:
+        if scope_stack.peek().symbols.peek().value is "INTEGER":
+            out += "WRITEI"
+        elif scope_stack.peek().symbols.peek().value is "INTEGER":
+            out += "WRITEF"
+        out += scope_stack.peek().symbols.peek().name    
+        print(out)
+    except:
+        pass
 
 
 def p_return_stmt(p):
@@ -202,7 +217,6 @@ def p_expr(p):
 def p_expr_prefix(p):
     """expr_prefix : expr_prefix factor addop
     | empty"""
-
 
 def p_factor(p):
     """factor : factor_prefix postfix_expr"""
@@ -304,16 +318,17 @@ def new_cond_scope():
     cond_sym_table = Node.SymbolTable("")
     counter += 1
     cond_sym_table.name = "BLOCK " + str(counter)
-    if debug:
+    if debug is 3:
         print("new scope", cond_sym_table.name, "which has a parent", scope_stack.peek().name)
     scope_stack.push(cond_sym_table)
 
-    print("\nSymbol table", cond_sym_table.name)
+    if debug is 3:
+        print("\nSymbol table", cond_sym_table.name)
 
 
 def new_func_scope():
     func_sym_table = Node.SymbolTable("FUNC")
-    if debug:
+    if debug is 3:
         print("new scope", func_sym_table.name, "which has a parent", scope_stack.peek().name)
     scope_stack.push(func_sym_table)
 
@@ -321,7 +336,7 @@ def new_func_scope():
 def end_scope():
     if not scope_stack.is_empty():
         cur_scope = scope_stack.pop()
-        if debug:
+        if debug is 3:
             print("getting parent scope of", cur_scope.name, " ")
             print("which is", scope_stack.peek().name)
     else:
