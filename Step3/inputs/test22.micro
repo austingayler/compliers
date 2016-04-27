@@ -1,0 +1,14 @@
+PROGRAM fibonacci
+BEGIN
+	FUNCTION INT G ()
+	BEGIN
+		IF(var>ver)
+			INT b;
+			b := 2;
+		ELSE
+			INT C;
+			RETURN 8;
+		ENDIF
+		RETURN 5;
+	END
+END
