@@ -24,6 +24,7 @@ cur_sym_type = None
 id_list_symbols = []
 list_var_decl = False
 
+var_types = {}
 
 ## PROGRAM
 def p_program(p):
@@ -391,8 +392,29 @@ def end_scope():
     else:
         print("Error: Stack is empty")
 
+def generateIR(tree):
+    """post order traverse tree.  need a case for every type of node we want to generate IR for"""
+
+    pass
+
+def print_tree(tree, level=0, indent=4):
+    """credit:
+    https://stackoverflow.com/questions/30521991/python-recursively-printing-a-tree-from-a-list-structure
+    """
+    print(" " * indent * (level - 1) + '+---' * (level > 0) + tree[0])
+    for val in tree[1:]:
+        if val:
+            if type(val) is tuple:
+                print_tree(val, level + 1)
+            else:
+                print(' ' * indent * level + '+---' + val)
+
+
 parser = yacc.yacc()
 
 result = parser.parse(data)
 
-print(result)
+print_tree(result)
+generateIR(result)
+
+# print(result)
