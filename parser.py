@@ -1,7 +1,7 @@
+import Node
 import Stack
 import ply.yacc as yacc
 import scanner
-import Node
 
 tokens = scanner.tokens
 data = scanner.data
@@ -25,6 +25,7 @@ id_list_symbols = []
 list_var_decl = False
 
 var_types = {}
+
 
 ## PROGRAM
 def p_program(p):
@@ -78,7 +79,7 @@ def p_decl(p):
 ## GLOBAL STRING DECLARATIONS
 def p_string_decl(p):
     'string_decl : STRING id ASSIGN str SEMI'
-    p[0] = ("STRING_DECL", p[1], p[2], p[3], p[4],p[5])
+    p[0] = ("STRING_DECL", p[1], p[2], p[3], p[4], p[5])
 
 
 def p_str(p):
@@ -156,6 +157,7 @@ def p_param_decl_tail(p):
     if len(p) == 4:
         p[0] = ("PARAM_DECL_TAIL", p[1], p[2], p[3])
 
+
 ## Function Declarations
 def p_func_declarations(p):
     """func_declarations : func_decl func_declarations
@@ -212,7 +214,7 @@ def p_assign_stmt(p):
 
 def p_assign_expr(p):
     """assign_expr : id ASSIGN expr"""
-    #FIXME?
+    # FIXME?
     p[0] = ("ASSIGN_EXPR", p[1], p[2], p[3])
 
 
@@ -314,11 +316,12 @@ def p_if_stmt(p):
     # FIXME removed rules not-lits going to empty
     p[0] = ("IF", p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[9], p[10])
 
+
 def p_else_part(p):
     """else_part : ELSE pgm_body_var_decl_aux else_scope decl stmt_list
     | empty"""
     if len(p) == 6:
-        #FIXME removed rules not-lits going to empty
+        # FIXME removed rules not-lits going to empty
         p[0] = ("ELSE", p[1], p[4], p[5])
     if (p[1]):
         end_scope()
@@ -392,10 +395,12 @@ def end_scope():
     else:
         print("Error: Stack is empty")
 
+
 def generateIR(tree):
     """post order traverse tree.  need a case for every type of node we want to generate IR for"""
 
     pass
+
 
 def print_tree(tree, level=0, indent=4):
     """credit:
