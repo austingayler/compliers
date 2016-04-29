@@ -1,0 +1,17 @@
+PROGRAM test
+BEGIN
+  FUNCTION INT main()
+	BEGIN
+	IF (a = b)
+		h:=0;
+	ELSE
+
+	     WHILE (j<=10)
+		     a := j;
+		     j := j + 1;		
+	     ENDWHILE
+
+	ENDIF
+	RETURN a+b;
+	END
+END

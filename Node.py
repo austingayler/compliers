@@ -9,10 +9,12 @@ class Symbol:
 
 
 class SymbolTable(object):
+    
     # each symbol table has a list of symbols it contains and a list of sub symbol tables (scopes)
     def __init__(self, name):
         self.name = name
         self.symbols = Stack.Stack()
+        self.debug = 4
 
     def add_symbol(self, symbol):
         # output = ("name \"" + symbol.name + "\"").ljust(20) + (" type " + str(symbol.type)).ljust(20) #nice formatting
@@ -24,7 +26,8 @@ class SymbolTable(object):
         if duplicate_exists:
             quit()
         else:
-            print(output)
+            if self.debug is 3:
+                print(output)
             self.symbols.push(symbol)
 
     def check_duplicate(self, symbol):
@@ -33,14 +36,38 @@ class SymbolTable(object):
                 print("DECLARATION ERROR", symbol.name)
                 return True
         return False
+        
+    def get_last_symbol(self):
+        if(self.symbols.size()):
+            return self.symbols.peek().value
+        else:
+            return ""
 
-
+    def search_symbol_table(self,looking_for):
+        return self.symbols.search_stack(looking_for)
+    def print_symbol_table(self):
+        self.symbols.print_stack()
 class IRNode:
     def __init__(self, op_code, op1, op2, result):
         self.op_code = op_code
         self.op1 = op1
         self.op2 = op2
         self.result = result
+    
+    def print_node(self):
+        out = self.op_code
+        
+        if out is None:
+            out = "OP_CODE" + " "
+        else:
+            out += " "
+        if self.op1 is not None:
+            out = out + self.op1 + " "
+        if self.op2 is not None:
+            out += self.op2 + " "
+        if self.result is not None:
+            out += self.result + " "
+        print(out)
 
 
 class LittleNode:
@@ -48,3 +75,18 @@ class LittleNode:
         self.op_code = op_code
         self.op1 = op1
         self.op2 = op2
+
+class AlgebreicNode:
+    def __init__(self,value,l_child=None,r_child=None):
+        self.value = value
+        self.l_child = l_child
+        self.r_child = r_child
+    def pre_order(self):
+        if self.l_child is not None:
+            self.l_child.pre_order()
+        if isinstance(self.value,AlgebreicNode):
+            self.value.pre_order()
+        else:
+            print(self.value)
+        if self.r_child is not None:
+            self.r_child.pre_order()
