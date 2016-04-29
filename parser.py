@@ -2,6 +2,7 @@ import Node
 import Stack
 import ply.yacc as yacc
 import scanner
+import pprint
 
 tokens = scanner.tokens
 data = scanner.data
@@ -396,30 +397,246 @@ def end_scope():
         print("Error: Stack is empty")
 
 
-def generateIR(tree):
-    """post order traverse tree.  need a case for every type of node we want to generate IR for"""
+#def generate_ir(tree):
+    # """post order traverse tree.  need a case for every type of node we want to generate IR for"""
+    # print("______________________________________________________________________________")
+    # for t in tree[1:]:
+    #     if isinstance(t, tuple):
+    #         generate_ir(t)
+    #
+    # if tree[0] == "EXPR":
+    #     op = op_type(tree)
+    #     if op == "+":
+    #
+    #     print("OP", op_type(tree))
+    # #print(tree)
+    #
+    # pass
 
-    pass
+#
+# def op_type(expr):
+#     if expr and expr[1] and expr[1][3]:
+#         return expr[1][3][1]
+#
+#
+# def type_check(node, idt):
+#     """post order traversal of the tree to find the type of a var."""
+#     found = False
+#     cur_type = None
+#     # nested functions so there are no globals
+#     def walker(nod):
+#         nonlocal found
+#         if found:
+#             return False
+#         else:
+#             if nod[0]=="VAR_DECL":
+#                 cur_type = nod[1][1] #should be type thing
+#             if nod[0]=="IDENT" and nod[1] == idt:
+#                 found = True
+#             return True
+#
+#     temp_node = node
+#     while not found:
+#         for t in temp_node[1:]:
+#             if isinstance(t, tuple):
+#                 if not walker(t):
+#                     break
+#             if found:
+#                 break
+#
+#     return cur_type
+#
+#
 
 
-def print_tree(tree, level=0, indent=4):
-    """credit:
-    https://stackoverflow.com/questions/30521991/python-recursively-printing-a-tree-from-a-list-structure
-    """
-    print(" " * indent * (level - 1) + '+---' * (level > 0) + tree[0])
-    for val in tree[1:]:
-        if val:
-            if type(val) is tuple:
-                print_tree(val, level + 1)
+
+#--------------------------------------
+
+class ASTNode():
+    def __init__(self, name, stuff, children):
+        self.name = name
+        self.stuff = stuff
+        self.children = children
+
+    def __str__(self):
+        return self.__str_helper__(0)
+
+    def __str_helper__(self, level):
+        st = ""
+        st += ((level * ' ') + "Name:%s, Stuff:%s, Children:%s\n" % (self.name, self.stuff, self.children))
+        for c in self.children:
+            st += c.__str_helper__(level+1)
+        return st
+
+    def __repr__(self):
+        return self.name
+
+    def clean(self):
+        good_children = []
+
+        for c in self.children:
+            c.clean()
+            if c.name in []: #"ID_TAIL", "DECL", "POSTFIX_EPR", "BASE_STMT", "ASSIGN_STMT"
+                good_children.extend(c.children)
+                self.stuff.extend(c.stuff)
             else:
-                print(' ' * indent * level + '+---' + val)
+                if c is not None:
+                    good_children.append(c)
+        good_stuff = []
+        for s in self.stuff:
+            if s is not None:
+                good_stuff.append(s.strip())
+
+        self.children = good_children
+        self.stuff = good_stuff
+
+    def has(self, string):
+        return string in str(self.children)
+
+    def get(self, string):
+        for c in self.children:
+            if c.name == string:
+                return c
+
+
+class Context():
+    def __init__(self):
+        self.var_count = 0
+        self.var_stack = []
+        self.prog = ""
+
+    def write(self, string):
+        self.prog += string
+
+    def macaroni(self, node): #if we create a new variable, we return its name.
+        if node is None:
+            return
+
+        if node.name == "PRI":
+            if len(node.children)==0:
+                self.push(node.stuff[0])
+            else:
+                self.macaroni(node.children[0])
+            return
+
+        if node.name == "IDENT":
+            self.push(node.stuff[0])
+            return
+
+        if node.name == "EXPR_PRE":
+
+            self.macaroni(node.get("EXPR_PRE"))
+            n1 = self.pop()
+            self.macaroni(node.get("FACTOR"))
+            n2 = self.pop()
+
+            nw = self.nv()
+            self.macaroni(node.get("BIN_OP"))
+            self.write(n1 + " " + n2  + " " + nw)
+            self.write("\n")
+            return
+
+
+
+        if node.name == "BIN_OP":
+
+            marp = {
+            "+":"addi",
+            "-":"subi",
+            "*":"muli",
+            "/":"divi",
+            ">=":"GEI",
+            ">":"GTI",
+            "<=":"LEI",
+            "<":"LTI",
+            "!=":"NEI",
+            "=":"EQI"
+            }
+
+            self.write(marp[node.stuff[0]] +" ")
+            return
+
+        if node.name == "ASSIGN_EXPR":
+            self.macaroni(node.get("EXPR"))
+            self.macaroni(node.get("IDENT"))
+            self.write("STOREI %s %s\n" % (self.pop(), self.pop()))
+            return
+
+        # if node.name == "WHILE":
+        #     cond = node.get("COND")
+        #     stmtlst = node.get("STMT_LIST")
+        #     lbl = self.nv()
+        #     end_lbl = self.nv()
+
+        #     self.macaroni(cond)
+        #     boo = self.pop()
+        #     self.write("EQ " + boo + " 1 " + end_lbl +"\n")
+        #     self.write("\n"+lbl + ":\n")
+        #     self.macaroni(stmtlst)
+        #     self.macaroni(cond)
+        #     boo = self.pop()
+        #     self.write("EQ " + boo + " 1 " + lbl +"\n")
+
+        #     self.write("\n"+ end_lbl + ":\n")
+
+
+        # if node.name == "COND":
+        #     for c in node.children:
+        #         self.macaroni(c)
+        #     return
+
+        if node.name == "IF":
+            pass
+
+
+        for c in node.children:
+            self.macaroni(c)
+
+
+    def push(self, var_name):
+        self.var_stack.append(var_name)
+
+    def pop(self):
+        v = self.var_stack[-1]
+        self.var_stack = self.var_stack[:-1]
+        return v
+
+    def nv(self):
+        n = self.var_count
+        self.var_count+=1
+        self.var_stack.append("t"+str(n))
+        return "t"+str(n)
+
+def unwrap(tup):
+    name = tup[0]
+    stuff = []
+    children = []
+    for t in tup[1:]:
+        if isinstance(t, tuple):
+            children.append(unwrap(t))
+        else:
+            stuff.append(t)
+
+    nod = ASTNode(name, stuff, children)
+    for c in children:
+        c.parent = nod
+    return nod
+
+
 
 
 parser = yacc.yacc()
 
+pp = pprint.PrettyPrinter(indent=4)
 result = parser.parse(data)
+pp.pprint(result)
 
-print_tree(result)
-generateIR(result)
+asTree = unwrap(result)
 
-# print(result)
+asTree.clean()
+ctx = Context()
+prog = ctx.macaroni(asTree)
+print(ctx.prog)
+print(asTree)
+
+#--------------------------------------
