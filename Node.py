@@ -34,7 +34,10 @@ class SymbolTable(object):
                 return True
         return False
 
-
+    def search_symbol_table(self,looking_for):
+        return self.symbols.search_stack(looking_for)
+    def print_symbol_table(self):
+        self.symbols.print_stack()
 class IRNode:
     def __init__(self, op_code, op1, op2, result):
         self.op_code = op_code
@@ -48,3 +51,18 @@ class LittleNode:
         self.op_code = op_code
         self.op1 = op1
         self.op2 = op2
+
+class AlgebreicNode:
+    def __init__(self,value,l_child=None,r_child=None):
+        self.value = value
+        self.l_child = l_child
+        self.r_child = r_child
+    def pre_order(self):
+        if self.l_child is not None:
+            self.l_child.pre_order()
+        if isinstance(self.value,AlgebreicNode):
+            self.value.pre_order()
+        else:
+            print(self.value)
+        if self.r_child is not None:
+            self.r_child.pre_order()
