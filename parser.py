@@ -23,7 +23,9 @@ id_stack = Stack.Stack()
 cur_sym_type = None
 id_list_symbols = []
 list_var_decl = False
-cur_irnode = None
+
+label_stack = Stack.Stack()
+label_count = 0
 
 
 ## PROGRAM
@@ -37,6 +39,8 @@ def p_id(p):
 
     # print("Encountered ", p[1].strip(), "Scope stax name =", scope_stack.peek().name)
 
+    p[0] = p[1]
+    
     id = p[1].strip()
     
     if scope_stack.peek().name == "FUNC":
@@ -51,15 +55,6 @@ def p_id(p):
     else:
         id_stack.push(id)
         
-        global cur_irnode
-        if cur_irnode is None:
-            cur_irnode = Node.IRNode(None, id, None, None)
-        else:
-            if cur_irnode.op1 is None:
-                cur_irnode.op1 = id
-            else:
-                cur_irnode.op2 = id
-
 
 def p_pgm_body(p):
     'pgm_body : pgm_body_var_decl_aux decl func_declarations'
@@ -69,9 +64,6 @@ def p_pgm_body_var_decl_aux(p):
     'pgm_body_var_decl_aux : empty'
     global list_var_decl
     list_var_decl = True
-
-    global cur_irnode
-    cur_irnode = None
 
 
 def p_decl(p):
@@ -192,16 +184,11 @@ def p_base_stmt(p):
 ## Basic Statements
 def p_assign_stmt(p):
     """assign_stmt : assign_expr SEMI"""
-    
 
 
 def p_assign_expr(p):
     """assign_expr : id ASSIGN expr"""
-    global cur_irnode
-    if cur_irnode.op_code is None:
-        cur_irnode.op_code = p[2].strip()
-    cur_irnode.print_node()
-    cur_irnode = None
+    swag_print((p[1], p[2], p[3]))
 
 def p_read_stmt(p):
     """read_stmt : READ LPAREN id_list RPAREN SEMI"""
@@ -218,28 +205,55 @@ def p_return_stmt(p):
 ## Expressions
 def p_expr(p):
     """expr : expr_prefix factor"""
-
-
+    #swag_print((p[1], p[2]))
+    p[0] = list(filter(None.__ne__, p[1:]))
+    
 def p_expr_prefix(p):
     """expr_prefix : expr_prefix factor addop
     | empty"""
+    if len(p) is not 2:
+        if p[3] is "+":
+            pass
+            #swag_print((p[1], p[2], p[3]))
+        if p[3] is "-":
+            pass
+            #swag_print((p[1], p[2], p[3]))
+            
+        p[0] = list(filter(None.__ne__, p[1:])) #[p[1], p[2], p[3]]
+    
 
 def p_factor(p):
     """factor : factor_prefix postfix_expr"""
+    #swag_print((p[1], p[2]))
+    p[0] = list(filter(None.__ne__, p[1:]))
 
 
 def p_factor_prefix(p):
     """factor_prefix : factor_prefix postfix_expr mulop
     | empty"""
+    if len(p) is not 2:
+        if p[3] is "*":
+            pass
+            #swag_print((p[1], p[2], p[3]))
+        if p[3] is "/":
+            pass
+            #swag_print((p[1], p[2], p[3]))
+            
+        p[0] = list(filter(None.__ne__, p[1:]))
 
 
 def p_postfix_expr(p):
     """postfix_expr : primary
     | call_expr"""
-
+    if p[1] is None:
+        pass
+        #p[0] = None
+    else:
+        p[0] = p[1]
 
 def p_call_expr(p):
     """call_expr : id LPAREN expr_list RPAREN"""
+    p[0] = None
 
 
 def p_expr_list(p):
@@ -257,55 +271,115 @@ def p_primary(p):
     | id
     | INTLITERAL
     | FLOATLITERAL"""
-    if len(p) == 2 and p[1] is not None:    
-        global cur_irnode
-        cur_irnode.result = p[1].strip()
+    if len(p) is 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[2]
 
 
 # """addop : + | -"""
 def p_addop(p):
     """addop : PLUS
     | MINUS"""
-    global cur_irnode
-    cur_irnode.op_code = p[1].strip()
+    p[0] = p[1]
 
 # """mulop :  | /"""
 def p_mulop(p):
     """mulop : TIMES
     | DIVIDE"""
-    global cur_irnode
-    cur_irnode.op_code = p[1].strip()
+    p[0] = p[1]
 
 ## Complex Statements and Condition
 def p_if_stmt(p):
     """if_stmt : IF LPAREN cond RPAREN pgm_body_var_decl_aux decl stmt_list end_if else_part ENDIF"""
+    global label_stack
+    endif = label_stack.pop()
+    
+    print("\n;LABEL label" + str(endif))
 
-
+def p_write_jump(p):
+    """write_jump : empty"""
+    global label_count
+    global label_stack
+    label_count += 1 
+    
+    label_stack.push(label_count)
+    jump = ";JUMP label" + str(label_stack.pop())
+    else_ = ";LABEL label" + str(label_stack.pop())
+    
+    #print(else_)
+    label_stack.push(label_count)
+    print(jump)
+    print(else_)
+    
 def p_else_part(p):
-    """else_part : ELSE pgm_body_var_decl_aux else_scope decl stmt_list
+    """else_part : write_jump ELSE pgm_body_var_decl_aux else_scope decl stmt_list
     | empty"""
-    if (p[1]):
+    if (p[1]): #if ELSE part
         end_scope()
-
-
+        
+    #else:
+     #   global label_stack
+      #  endif = label_stack.pop()
+       # 
+        #print("\n;LABEL label" + str(endif))
+    
 def p_cond(p):
     """cond : expr compop expr"""
+    global label_count
+    global label_stack
     new_cond_scope()
-
-
+    label_count += 1 
+    label_stack.push(label_count)
+    finish_while = "label" + str(label_count)
+    
+    op = str(p[2].strip())
+    expr1 = "var1" #str(p[1]).strip()
+    expr2 = "var2" # str(p[3]).strip()
+    
+    out = ""
+    if op == "<=":
+        out = "LEI " + expr1 + " " + expr2 + " " +  finish_while
+    elif op == ">=":
+        out = "GEI " + expr1 + " " +  expr2 + " " +  finish_while
+    elif op == "!=":
+        out = "EQI " + expr1 + " " +  expr2 + " " +  finish_while
+    elif op == ">":
+        out = "GT " + expr1 + " " +  expr2 + " " +  finish_while
+    elif op == "<":
+        out = "LT " + expr1 + " " +  expr2 + " " +  finish_while
+    elif op == "=":
+        out = "EQ " + expr1 + " " +  expr2 + " " +  finish_while
+    
+    print(out)
+    print()
+    
 def p_compop(p):
     """compop : COMPOP"""
+    p[0] = p[1]
 
 
+def p_insert_label(p): #cuz idk how to tell if we got to cond from while or if
+    """insert_label : empty"""
+    global label_stack
+    global label_count
+    label_count += 1
+    label_stack.push(label_count)
+    print("\n;LABEL label" + str(label_count))
+    
 ## While statements
 def p_while_stmt(p):
-    """while_stmt : WHILE LPAREN cond RPAREN pgm_body_var_decl_aux decl stmt_list ENDWHILE"""
+    """while_stmt : WHILE insert_label LPAREN cond RPAREN pgm_body_var_decl_aux decl stmt_list ENDWHILE"""
     end_scope()
-
-
+    endwhile = label_stack.pop()
+    jump_stmt = label_stack.pop()
+    
+    print(";JUMP label" + str(jump_stmt))
+    print(";LABEL label" + str(endwhile))
+    
 def p_empty(p):
     'empty :'
-
+    p[0] = None
 
 ## Scoping
 def p_else_scope(p):
@@ -352,10 +426,19 @@ def end_scope():
             print("which is", scope_stack.peek().name)
     else:
         print("Stack is empty")
+        
+def swag_print(l):
+    out = ""
+    out += l[0].strip().ljust(10)
+    out += l[1].strip().ljust(10)
+    out += [item for sublist in l for item in sublist][0].strip().ljust(10)
+
+    print(out)
 
 parser = yacc.yacc()
 
 result = parser.parse(data)
+
 
 
 
