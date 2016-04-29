@@ -25,7 +25,7 @@ id_list_symbols = []
 list_var_decl = False
 label_stack = Stack.Stack()
 label_count = 0
-output_IR_code = ""
+output_IR_code = []
 cur_reg = 0
 
 ## PROGRAM
@@ -303,9 +303,9 @@ def p_if_stmt(p):
     global label_stack
     global output_IR_code
     endif = label_stack.pop()
-    lbl = "\n;LABEL label" + str(endif)
+    lbl = ";LABEL label" + str(endif)
     #print(lbl)
-    output_IR_code += lbl
+    output_IR_code.append(lbl)
 
 def p_write_jump(p):
     """write_jump : empty"""
@@ -320,9 +320,9 @@ def p_write_jump(p):
 
     label_stack.push(label_count)
     #print(jump)
-    output_IR_code += jump
+    output_IR_code.append(jump)
     #print(else_)
-    output_IR_code += else_
+    output_IR_code.append(else_)
     
 def p_else_part(p):
     """else_part : write_jump ELSE pgm_body_var_decl_aux else_scope decl stmt_list
@@ -334,7 +334,7 @@ def p_else_part(p):
      #   global label_stack
       #  endif = label_stack.pop()
        # 
-        #print("\n;LABEL label" + str(endif))
+        #print(";LABEL label" + str(endif))
     
 def p_cond(p):
     """cond : expr compop expr"""
@@ -342,7 +342,7 @@ def p_cond(p):
     global label_stack
     global output_IR_code
 
-    output_IR_code+=generate_cond_IR_code(p[1],p[2],p[3])
+    output_IR_code += generate_cond_IR_code(p[1],p[2],p[3])
 
     new_cond_scope()
     label_count += 1 
@@ -368,7 +368,7 @@ def p_cond(p):
         out = "EQ " + expr1 + " " +  expr2 + " " +  end_ctrl
     
     #print(out)
-    output_IR_code += out
+    output_IR_code.append(out)
     #print()
     
 def p_compop(p):
@@ -385,9 +385,9 @@ def p_insert_label(p): #cuz idk how to tell if we got to cond from while or if
     label_count += 1
     label_stack.push(label_count)
     
-    out = "\n;LABEL label" + str(label_count)
+    out = ";LABEL label" + str(label_count)
     #print(out)
-    output_IR_code += out
+    output_IR_code.append(out)
     
 ## While statements
 def p_while_stmt(p):
@@ -401,9 +401,9 @@ def p_while_stmt(p):
     lbl = ";LABEL label" + str(endwhile)
     
     #print(jmp)
-    output_IR_code += jmp
+    output_IR_code.append(jmp)
     #print(lbl)
-    output_IR_code += lbl
+    output_IR_code.append(lbl)
     
 def p_empty(p):
     'empty :'
@@ -458,7 +458,7 @@ def end_scope():
 def generate_cond_IR_code(expr1,compop,expr2):
     input_list1 = convert_to_postfix(expr1)
     input_list2 = convert_to_postfix(expr2)
-    return_string = ""
+    return_string = []
     index = 0
     got_in = False
     while len(input_list1)>1:
@@ -471,17 +471,17 @@ def generate_cond_IR_code(expr1,compop,expr2):
                 op_type = "I"
             else:
                 op_type = "F"
-            return_string += "STORE"+op_type+" "+input_list1[index-2]+" $T"+str(reg1)+"\n"
-            return_string += "STORE"+op_type+" "+input_list1[index-1]+" $T"+str(reg2)+"\n"
+            return_string.append("STORE"+op_type+" "+input_list1[index-2]+" $T"+str(reg1))
+            return_string.append("STORE"+op_type+" "+input_list1[index-1]+" $T"+str(reg2))
             the_reg = get_next_reg()
             if input_list1[index] == "+":
-                return_string += "ADD"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("ADD"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
             elif input_list1[index] == "-":
-                return_string += "SUB"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("SUB"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
             elif input_list1[index] == "*":
-                return_string += "MUL"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("MUL"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
             elif input_list1[index] == "/":
-                return_string += "DIV"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("DIV"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
 
             input_list1.pop(index-2)
             input_list1.pop(index-2)
@@ -499,13 +499,9 @@ def generate_cond_IR_code(expr1,compop,expr2):
         the_reg = get_next_reg()
         important_reg1 = the_reg
         if op_type == "INT":
-            return_string += "STOREI "+input_list1[0]+" T$"+str(the_reg)+"\n"
+            return_string.append("STOREI "+input_list1[0]+" T$"+str(the_reg))
         else:
-            return_string += "STOREF "+input_list1[0]+" T$"+str(the_reg)+"\n"
-
-
-
-
+            return_string.append("STOREF "+input_list1[0]+" T$"+str(the_reg))
 
     index = 0
     got_in = False
@@ -519,17 +515,17 @@ def generate_cond_IR_code(expr1,compop,expr2):
                 op_type = "I"
             else:
                 op_type = "F"
-            return_string += "STORE"+op_type+" "+input_list2[index-2]+" $T"+str(reg1)+"\n"
-            return_string += "STORE"+op_type+" "+input_list2[index-1]+" $T"+str(reg2)+"\n"
+            return_string.append("STORE"+op_type+" "+input_list2[index-2]+" $T"+str(reg1))
+            return_string.append("STORE"+op_type+" "+input_list2[index-1]+" $T"+str(reg2))
             the_reg = get_next_reg()
             if input_list2[index] == "+":
-                return_string += "ADD"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("ADD"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
             elif input_list2[index] == "-":
-                return_string += "SUB"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("SUB"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
             elif input_list2[index] == "*":
-                return_string += "MUL"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("MUL"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
             elif input_list2[index] == "/":
-                return_string += "DIV"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("DIV"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
 
             input_list2.pop(index-2)
             input_list2.pop(index-2)
@@ -543,9 +539,9 @@ def generate_cond_IR_code(expr1,compop,expr2):
         the_reg = get_next_reg()
         important_reg2 = the_reg
         if op_type == "INT":
-            return_string += "STOREI "+input_list2[0]+" T$"+str(the_reg)+"\n"
+            return_string.append("STOREI "+input_list2[0]+" T$"+str(the_reg))
         else:
-            return_string += "STOREF "+input_list2[0]+" T$"+str(the_reg)+"\n"
+            return_string.append("STOREF "+input_list2[0]+" T$"+str(the_reg))
 
 
     #print("HELLLLOOOOOOOOOO")
@@ -558,9 +554,9 @@ def generate_cond_IR_code(expr1,compop,expr2):
 
 
 
-def generate_assign_expr_IR_code(in_id,expr):
+def generate_assign_expr_IR_code(in_id, expr):
     input_list = convert_to_postfix(expr)
-    return_string = ""
+    return_string = []
     index = 0
     got_in = False
     while len(input_list)>1:
@@ -573,17 +569,17 @@ def generate_assign_expr_IR_code(in_id,expr):
                 op_type = "I"
             else:
                 op_type = "F"
-            return_string += "STORE"+op_type+" "+input_list[index-2]+" $T"+str(reg1)+"\n"
-            return_string += "STORE"+op_type+" "+input_list[index-1]+" $T"+str(reg2)+"\n"
+            return_string.append("STORE"+op_type+" "+input_list[index-2]+" $T"+str(reg1))
+            return_string.append("STORE"+op_type+" "+input_list[index-1]+" $T"+str(reg2))
             the_reg = get_next_reg()
             if input_list[index] == "+":
-                return_string += "ADD"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("ADD"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
             elif input_list[index] == "-":
-                return_string += "SUB"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("SUB"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
             elif input_list[index] == "*":
-                return_string += "MUL"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("MUL"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
             elif input_list[index] == "/":
-                return_string += "DIV"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg)+"\n"
+                return_string.append("DIV"+op_type+" "+" $T"+str(reg1)+" $T"+str(reg2)+" "+"$T"+str(the_reg))
 
             input_list.pop(index-2)
             input_list.pop(index-2)
@@ -596,14 +592,14 @@ def generate_assign_expr_IR_code(in_id,expr):
         op_type = scope_stack.search_stack(in_id.strip())
         the_reg = get_next_reg()
         if op_type == "INT":
-            return_string += "STOREI "+input_list[0]+" T$"+str(the_reg)+"\n"
-            return_string += "STOREI T$"+str(the_reg)+" "+in_id+"\n"
+            return_string.append("STOREI "+input_list[0]+" T$"+str(the_reg))
+            return_string.append("STOREI T$"+str(the_reg)+" "+in_id)
         else:
-            return_string += "STOREF "+input_list[0]+" T$"+str(the_reg)+"\n"
-            return_string += "STOREF T$"+str(the_reg)+" "+in_id+"\n"
+            return_string.append("STOREF "+input_list[0]+" T$"+str(the_reg))
+            return_string.append("STOREF T$"+str(the_reg)+" "+in_id)
         return return_string
 
-    return_string += "STORE"+op_type+" "+" T$"+str(the_reg)+" "+in_id+"\n"
+    return_string.append("STORE"+op_type+" "+" T$"+str(the_reg)+" "+in_id)
     return return_string
 
 def convert_to_postfix(input_string):
@@ -663,4 +659,5 @@ result = parser.parse(data)
 print()
 print("OUTPUT_IR_CODE")
 print()
-print(output_IR_code)
+for stmt in output_IR_code:
+    print(stmt)
