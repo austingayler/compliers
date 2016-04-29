@@ -255,7 +255,7 @@ def p_postfix_expr(p):
         
     # dylan's code says only
     # p[0] = p[1] for p_postfix_expr
-    # I think this is wrong though, since we only have 1 function
+    # I think this is wrong though, since we only have 1 function?
 
 def p_call_expr(p):
     """call_expr : id LPAREN expr_list RPAREN"""
@@ -491,7 +491,7 @@ def generate_cond_IR_code(expr1,compop,expr2):
         index = index+1
     
     # used to be important_reg1 = the_reg 
-    important_reg1 = get_next_reg() # changed to this
+    important_reg1 = get_next_reg() # changed to this dylan
     #THIS MIGHT BE BAD. doesn't work with test_adv
     
     if not got_in:
