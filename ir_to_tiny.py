@@ -15,7 +15,7 @@ def read_file(file_name):
     return ir_node_list
 
 def build_ir_node(instructions_list):
-    if "LABEL" in instructions_list[0] or "LINK" in instructions_list[0]:
+    if "LINK" in instructions_list[0]: #or "LABEL" in instructions_list[0]
         pass
     else:
         op_code = instructions_list[0]
@@ -40,14 +40,50 @@ def build_ir_node(instructions_list):
 
 def transpile(ir_node_list):
     node_list = []
-    name_map = {"STOREI": "move", "MULTI": "muli", "ADDI": "addi", "DIVI": "divi", "WRITEI": "sys writei",
-                "RET": "sys halt"}
+    name_map = {"ADDI": "addi","SUBI": "subi", "MULTI": "muli",  "DIVI": "divi", "ADDF": "addr","SUBF": "subr", "MULTF": "mulr",  "DIVF": "divr",
+                "GTI":"jgt","GEI":"jge","LTI": "jlt","LEI": "jle","NEI":"jne","EQI":"jeq","GTF":"jgt","GEF":"jge","LTF":"jlt","LEF":"jle",
+                "READI": "sys readi","READF": "sys readr","WRITEI": "sys writei","WRITEF": "sys writer","WRITES":"sys writes",
+                "STOREI": "move", "STOREF":"move", "WRITEI": "sys writei","RET": "sys halt"}
     var_stack = Stack.Stack()
     seen_var_names = []
     for ir_node in ir_node_list:
-        if ir_node.op_code == "STOREI":
+        #print(ir_node.op_code)
+        if ir_node.op_code in ["GTI","GEI","LTI","LEI","NEI","EQI"]:
+            new_op1, new_op2,new_label = new_op(ir_node.op1, ir_node.op2,ir_node.result)
+            node0 = Node.LittleNode("cmpi",new_op1, new_op2)
+            node1 = Node.LittleNode(name_map[ir_node.op_code],new_label)
+            node_list.append(node0)
+            node_list.append(node1)
+        elif ir_node.op_code in ["GTF","GEF","LTF","LEF"]:
+            new_op1, new_op2,new_label = new_op(ir_node.op1, ir_node.op2,ir_node.result)
+            node0 = Node.LittleNode("cmpr",new_op1, new_op2)
+            node1 = Node.LittleNode(name_map[ir_node.op_code],new_label)
+            node_list.append(node0)
+            node_list.append(node1)
+            # add values to stack to append to the beginning of the little_list when done.
+        elif ir_node.op_code in ["JUMP"]:
+            node = Node.LittleNode("jmp", ir_node.op1)
+            node_list.append(node)
+        elif ir_node.op_code in ["LABEL"]:
+            node = Node.LittleNode("label", ir_node.op1)
+            node_list.append(node)
+        elif ir_node.op_code in ["WRITEI","WRITEF","WRITES"]:
+            node = Node.LittleNode(name_map[ir_node.op_code],ir_node.op1)
+            node_list.append(node)
+        elif ir_node.op_code in ["READI","READF"]:
             new_op1, new_op2, _ = new_op(ir_node.op1, ir_node.op2)
-            node = Node.LittleNode("move", new_op1, new_op2)
+
+            node = Node.LittleNode(name_map[ir_node.op_code],ir_node.op1)
+            node_list.append(node)
+            if ir_node.op1.isalpha():
+                if ir_node.op1 not in seen_var_names:
+                    node = Node.LittleNode("var", new_op1)
+                    var_stack.push(node)
+                    seen_var_names.append(ir_node.op1)
+
+        elif ir_node.op_code in ["STOREI","STOREF"]:
+            new_op1, new_op2, _ = new_op(ir_node.op1, ir_node.op2)
+            node = Node.LittleNode(name_map[ir_node.op_code], new_op1, new_op2)
             node_list.append(node)
             # add values to stack to append to the beginning of the little_list when done.
             if ir_node.op2.isalpha():
@@ -55,19 +91,18 @@ def transpile(ir_node_list):
                     node = Node.LittleNode("var", new_op2)
                     var_stack.push(node)
                     seen_var_names.append(ir_node.op2)
-        elif ir_node.op_code in ["ADDI", "DIVI", "MULTI"]:
+        elif ir_node.op_code in ["ADDI", "DIVI", "MULTI", "ADDF","SUBF","MULTF","DIVF"]:
             new_op1, new_op2, new_result = new_op(ir_node.op1, ir_node.op2, ir_node.result)
             node0 = Node.LittleNode("move", new_op1, new_result)
             node1 = Node.LittleNode(name_map[ir_node.op_code], new_op2, new_result)
             node_list.append(node0)
             node_list.append(node1)
-            pass
         elif ir_node.op_code in ["WRITEI", "RET"]:
             new_op1, _, _ = new_op(ir_node.op1)
             node = Node.LittleNode(name_map[ir_node.op_code], new_op1)
             node_list.append(node)
         else:
-            print("ERROR - Unhandeled op_code:", ir_node.op_code)
+            print("ERROR - Unhandeled op_code:", "\"" + ir_node.op_code + "\"")
 
     # put the variable declarations into the beginning of little_node_list in the correct order.
     for _ in range(len(var_stack.items)):
