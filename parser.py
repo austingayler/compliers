@@ -460,7 +460,7 @@ def generate_cond_IR_code(expr1,compop,expr2):
             input_list1.pop(index-2)
             input_list1.pop(index-2)
             input_list1.pop(index-2)
-            input_list1.insert(index-2,"T$"+str(the_reg))
+            input_list1.insert(index-2,"$T"+str(the_reg))
             index = index-2
         index = index+1
     
@@ -473,9 +473,9 @@ def generate_cond_IR_code(expr1,compop,expr2):
         the_reg = get_next_reg()
         important_reg1 = the_reg
         if op_type == "INT":
-            return_string.append("STOREI "+input_list1[0]+" T$"+str(the_reg))
+            return_string.append("STOREI "+input_list1[0]+" $T"+str(the_reg))
         else:
-            return_string.append("STOREF "+input_list1[0]+" T$"+str(the_reg))
+            return_string.append("STOREF "+input_list1[0]+" $T"+str(the_reg))
 
     index = 0
     got_in = False
@@ -504,7 +504,7 @@ def generate_cond_IR_code(expr1,compop,expr2):
             input_list2.pop(index-2)
             input_list2.pop(index-2)
             input_list2.pop(index-2)
-            input_list2.insert(index-2,"T$"+str(the_reg))
+            input_list2.insert(index-2,"$T"+str(the_reg))
             index = index-2
         index = index+1
     important_reg2 = the_reg
@@ -513,9 +513,9 @@ def generate_cond_IR_code(expr1,compop,expr2):
         the_reg = get_next_reg()
         important_reg2 = the_reg
         if op_type == "INT":
-            return_string.append("STOREI "+input_list2[0]+" T$"+str(the_reg))
+            return_string.append("STOREI "+input_list2[0]+" $T"+str(the_reg))
         else:
-            return_string.append("STOREF "+input_list2[0]+" T$"+str(the_reg))
+            return_string.append("STOREF "+input_list2[0]+" $T"+str(the_reg))
 
     return return_string,"$T"+str(important_reg1),"$T"+str(important_reg2),op_type
 
@@ -549,7 +549,7 @@ def generate_assign_expr_IR_code(in_id, expr):
             input_list.pop(index-2)
             input_list.pop(index-2)
             input_list.pop(index-2)
-            input_list.insert(index-2,"T$"+str(the_reg))
+            input_list.insert(index-2,"$T"+str(the_reg))
             index = index-2
         index = index+1
     
@@ -557,14 +557,14 @@ def generate_assign_expr_IR_code(in_id, expr):
         op_type = scope_stack.search_stack(in_id.strip())
         the_reg = get_next_reg()
         if op_type == "INT":
-            return_string.append("STOREI "+input_list[0]+" T$"+str(the_reg))
-            return_string.append("STOREI T$"+str(the_reg)+" "+in_id)
+            return_string.append("STOREI "+input_list[0]+" $T"+str(the_reg))
+            return_string.append("STOREI $T"+str(the_reg)+" "+in_id)
         else:
-            return_string.append("STOREF "+input_list[0]+" T$"+str(the_reg))
-            return_string.append("STOREF T$"+str(the_reg)+" "+in_id)
+            return_string.append("STOREF "+input_list[0]+" $T"+str(the_reg))
+            return_string.append("STOREF $T"+str(the_reg)+" "+in_id)
         return return_string
 
-    return_string.append("STORE"+op_type+" "+" T$"+str(the_reg)+" "+in_id)
+    return_string.append("STORE"+op_type+" "+" $T"+str(the_reg)+" "+in_id)
     return return_string
 
 def convert_to_postfix(input_string):
@@ -619,15 +619,19 @@ def get_next_reg():
 parser = yacc.yacc()
 
 result = parser.parse(data)
-target1 = open("IR_code_output.txt", 'w')
-target2 = open("final_code_output.txt",'w')
-target2.write(";IR code\n")
+
+if False:
+    print(";IR code\n")
 for stmt in output_IR_code:
-    target1.write(stmt+"\n")
-    target2.write(";"+stmt+"\n")
-target1.close()
-tiny_code = ir_to_tiny.convert_ir_to_tiny()
-target2.write(";tiny code\n")
+    #print(stmt)
+    pass
+
+tiny_code = ir_to_tiny.convert_ir_to_tiny(output_IR_code)
+print(";tiny code\n")
 for stmt in tiny_code:
-    target2.write(stmt+"\n")
-target2.close()
+    print(stmt)
+
+
+
+
+#swag

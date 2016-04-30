@@ -14,6 +14,15 @@ def read_file(file_name):
                 ir_node_list.append(node)
     return ir_node_list
 
+def build_little_node_list(ir):
+    ir_node_list = []
+    for stmt in ir:
+        split = stmt.split()
+        node = build_ir_node(split)
+        if node is not None:
+            ir_node_list.append(node)
+    return ir_node_list
+    
 def build_ir_node(instructions_list):
     if "LINK" in instructions_list[0]: #or "LABEL" in instructions_list[0]
         pass
@@ -122,9 +131,9 @@ def new_op(op1, op2="", op3=""):
 
     return new_op1, new_op2, new_op3
 
-def convert_ir_to_tiny():
-#    little_node_list = transpile(read_file(sys.argv[1]))
-    little_node_list = transpile(read_file("IR_code_output.txt"))
+def convert_ir_to_tiny(ir):
+    little_node_list = transpile(build_little_node_list(ir))
+    #little_node_list = transpile(read_file("IR_code_output.txt"))
     return_list = []
     for node in little_node_list:
         return_list.append(node.op_code+" "+node.op1+" "+node.op2)

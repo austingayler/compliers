@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#C:\\Python34\\python.exe parser.py $1 # > $output #because the freaking computers in the cs lab don't have python in their path vars
+
+python3 parser.py $1 
