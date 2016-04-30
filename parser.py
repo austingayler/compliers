@@ -2,6 +2,7 @@ import Stack
 import ply.yacc as yacc
 import scanner
 import Node
+import ir_to_tiny
 
 tokens = scanner.tokens
 data = scanner.data
@@ -188,7 +189,9 @@ def p_assign_stmt(p):
 def p_assign_expr(p):
     """assign_expr : id ASSIGN expr"""
     global output_IR_code
-    output_IR_code += generate_assign_expr_IR_code(p[1],p[3])
+    temp_IR_code = generate_assign_expr_IR_code(p[1],p[3])
+    for item in temp_IR_code:
+        output_IR_code.append(item)
 
 
 def p_read_stmt(p):
@@ -303,7 +306,7 @@ def p_if_stmt(p):
     global label_stack
     global output_IR_code
     endif = label_stack.pop()
-    lbl = ";LABEL label" + str(endif)
+    lbl = "LABEL label" + str(endif)
     #print(lbl)
     output_IR_code.append(lbl)
 
@@ -315,8 +318,8 @@ def p_write_jump(p):
     label_count += 1 
     
     label_stack.push(label_count)
-    jump = ";JUMP label" + str(label_stack.pop())
-    else_ = ";LABEL label" + str(label_stack.pop())
+    jump = "JUMP label" + str(label_stack.pop())
+    else_ = "LABEL label" + str(label_stack.pop())
 
     label_stack.push(label_count)
     #print(jump)
@@ -342,7 +345,9 @@ def p_cond(p):
     global label_stack
     global output_IR_code
 
-    output_IR_code += generate_cond_IR_code(p[1],p[2],p[3])
+    temp_IR_code = generate_cond_IR_code(p[1],p[2],p[3])
+    for item in temp_IR_code:
+        output_IR_code.append(str(item))
 
     new_cond_scope()
     label_count += 1 
@@ -385,7 +390,7 @@ def p_insert_label(p): #cuz idk how to tell if we got to cond from while or if
     label_count += 1
     label_stack.push(label_count)
     
-    out = ";LABEL label" + str(label_count)
+    out = "LABEL label" + str(label_count)
     #print(out)
     output_IR_code.append(out)
     
@@ -397,8 +402,8 @@ def p_while_stmt(p):
     endwhile = label_stack.pop()
     jump_stmt = label_stack.pop()
     
-    jmp = ";JUMP label" + str(jump_stmt)
-    lbl = ";LABEL label" + str(endwhile)
+    jmp = "JUMP label" + str(jump_stmt)
+    lbl = "LABEL label" + str(endwhile)
     
     #print(jmp)
     output_IR_code.append(jmp)
@@ -655,9 +660,15 @@ def get_next_reg():
 parser = yacc.yacc()
 
 result = parser.parse(data)
-
-print()
-print("OUTPUT_IR_CODE")
-print()
+target1 = open("IR_code_output.txt", 'w')
+target2 = open("final_code_output.txt",'w')
+target2.write(";IR code\n")
 for stmt in output_IR_code:
-    print(stmt)
+    target1.write(stmt+"\n")
+    target2.write(";"+stmt+"\n")
+target1.close()
+tiny_code = ir_to_tiny.convert_ir_to_tiny()
+target2.write(";tiny code\n")
+for stmt in tiny_code:
+    target2.write(stmt+"\n")
+target2.close()

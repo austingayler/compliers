@@ -38,7 +38,7 @@ def build_ir_node(instructions_list):
         return Node.IRNode(op_code, op1, op2, result)
 
 
-def transpile(ir_node_list):
+def transpile(ir_node_list,outfile):
     node_list = []
     name_map = {"ADDI": "addi","SUBI": "subi", "MULTI": "muli",  "DIVI": "divi", "ADDF": "addr","SUBF": "subr", "MULTF": "mulr",  "DIVF": "divr",
                 "GTI":"jgt","GEI":"jge","LTI": "jlt","LEI": "jle","NEI":"jne","EQI":"jeq","GTF":"jgt","GEF":"jge","LTF":"jlt","LEF":"jle",
@@ -47,7 +47,6 @@ def transpile(ir_node_list):
     var_stack = Stack.Stack()
     seen_var_names = []
     for ir_node in ir_node_list:
-        #print(ir_node.op_code)
         if ir_node.op_code in ["GTI","GEI","LTI","LEI","NEI","EQI"]:
             new_op1, new_op2,new_label = new_op(ir_node.op1, ir_node.op2,ir_node.result)
             node0 = Node.LittleNode("cmpi",new_op1, new_op2)
@@ -125,8 +124,12 @@ def new_op(op1, op2="", op3=""):
 
     return new_op1, new_op2, new_op3
 
-
-little_node_list = transpile(read_file(sys.argv[1]))
-
-for node in little_node_list:
-    print(node.op_code, node.op1, node.op2)
+def convert_ir_to_tiny():
+#    little_node_list = transpile(read_file(sys.argv[1]))
+    target = open("final_code_output.txt", 'w')
+    return_list = []
+    little_node_list = transpile(read_file("IR_code_output.txt"),target)
+    for node in little_node_list:
+        return_list.append(node.op_code+" "+node.op1+" "+node.op2)
+#        print(node.op_code, node.op1, node.op2)
+    return return_list
