@@ -37,10 +37,9 @@ def build_ir_node(instructions_list):
 
         return Node.IRNode(op_code, op1, op2, result)
 
-
-def transpile(ir_node_list,outfile):
+def transpile(ir_node_list):
     node_list = []
-    name_map = {"ADDI": "addi","SUBI": "subi", "MULTI": "muli",  "DIVI": "divi", "ADDF": "addr","SUBF": "subr", "MULTF": "mulr",  "DIVF": "divr",
+    name_map = {"ADDI": "addi","SUBI": "subi", "MULI": "muli",  "DIVI": "divi", "ADDF": "addr","SUBF": "subr", "MULF": "mulr",  "DIVF": "divr",
                 "GTI":"jgt","GEI":"jge","LTI": "jlt","LEI": "jle","NEI":"jne","EQI":"jeq","GTF":"jgt","GEF":"jge","LTF":"jlt","LEF":"jle",
                 "READI": "sys readi","READF": "sys readr","WRITEI": "sys writei","WRITEF": "sys writer","WRITES":"sys writes",
                 "STOREI": "move", "STOREF":"move", "WRITEI": "sys writei","RET": "sys halt"}
@@ -71,7 +70,6 @@ def transpile(ir_node_list,outfile):
             node_list.append(node)
         elif ir_node.op_code in ["READI","READF"]:
             new_op1, new_op2, _ = new_op(ir_node.op1, ir_node.op2)
-
             node = Node.LittleNode(name_map[ir_node.op_code],ir_node.op1)
             node_list.append(node)
             if ir_node.op1.isalpha():
@@ -90,7 +88,7 @@ def transpile(ir_node_list,outfile):
                     node = Node.LittleNode("var", new_op2)
                     var_stack.push(node)
                     seen_var_names.append(ir_node.op2)
-        elif ir_node.op_code in ["ADDI", "DIVI", "MULTI", "ADDF","SUBF","MULTF","DIVF"]:
+        elif ir_node.op_code in ["ADDI", "DIVI", "MULI", "ADDF","SUBF","MULF","DIVF"]:
             new_op1, new_op2, new_result = new_op(ir_node.op1, ir_node.op2, ir_node.result)
             node0 = Node.LittleNode("move", new_op1, new_result)
             node1 = Node.LittleNode(name_map[ir_node.op_code], new_op2, new_result)
@@ -126,10 +124,8 @@ def new_op(op1, op2="", op3=""):
 
 def convert_ir_to_tiny():
 #    little_node_list = transpile(read_file(sys.argv[1]))
-    target = open("final_code_output.txt", 'w')
+    little_node_list = transpile(read_file("IR_code_output.txt"))
     return_list = []
-    little_node_list = transpile(read_file("IR_code_output.txt"),target)
     for node in little_node_list:
         return_list.append(node.op_code+" "+node.op1+" "+node.op2)
-#        print(node.op_code, node.op1, node.op2)
     return return_list

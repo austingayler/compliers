@@ -34,7 +34,6 @@ def p_program(p):
     'program : PROGRAM id BEGIN pgm_body END'
     #end_scope()
 
-
 def p_id(p):
     'id : IDENTIFIER'
 
@@ -56,16 +55,13 @@ def p_id(p):
     else:
         id_stack.push(p[1].strip())
 
-
 def p_pgm_body(p):
     'pgm_body : pgm_body_var_decl_aux decl func_declarations'
-
 
 def p_pgm_body_var_decl_aux(p):
     'pgm_body_var_decl_aux : empty'
     global list_var_decl
     list_var_decl = True
-
 
 def p_decl(p):
     """decl : string_decl decl
@@ -75,17 +71,14 @@ def p_decl(p):
         global list_var_decl
         list_var_decl = False
 
-
 ## GLOBAL STRING DECLARATIONS
 def p_string_decl(p):
     'string_decl : STRING id ASSIGN str SEMI'
-
 
 def p_str(p):
     'str : STRINGLITERAL'
     sym = Node.Symbol(id_stack.pop(), p[1].strip(), "STRING")
     scope_stack.peek().add_symbol(sym)
-
 
 ## Variable Declaration
 def p_var_decl(p):
@@ -93,19 +86,16 @@ def p_var_decl(p):
     global cur_sym_type
     cur_sym_type = None
 
-
 def p_var_type(p):
     """var_type : FLOAT
     | INT"""
     global cur_sym_type
     cur_sym_type = p[1].strip()
 
-
 def p_any_type(p):
     """any_type : var_type
     | VOID"""
     new_func_scope()
-
 
 def p_id_list(p):
     'id_list : id id_tail'
@@ -117,7 +107,6 @@ def p_id_list(p):
             scope_stack.peek().add_symbol(sym)
         id_list_symbols = []
 
-
 def p_id_tail(p):
     """id_tail : COMMA id id_tail
     | empty"""
@@ -125,12 +114,10 @@ def p_id_tail(p):
         global id_list_symbols
         id_list_symbols.append(id_stack.pop())
 
-
 ## Function Paramater List
 def p_param_decl_list(p):
     """param_decl_list : param_decl param_decl_tail
     | empty"""
-
 
 def p_param_decl(p):
     'param_decl : var_type id'
@@ -138,17 +125,14 @@ def p_param_decl(p):
     sym = Node.Symbol(id_stack.pop(), None, cur_sym_type)
     scope_stack.peek().add_symbol(sym)
 
-
 def p_param_decl_tail(p):
     """param_decl_tail : COMMA param_decl param_decl_tail
     | empty"""
-
 
 ## Function Declarations
 def p_func_declarations(p):
     """func_declarations : func_decl func_declarations
     | empty"""
-
 
 def p_func_decl(p):
     """func_decl : FUNCTION any_type id LPAREN param_decl_list RPAREN BEGIN func_body END"""
@@ -162,25 +146,21 @@ def p_list_var_decl_part(p):
     global list_var_decl
     list_var_decl = True
 
-
 ## Statement List
 def p_stmt_list(p):
     """stmt_list : stmt stmt_list
     | empty"""
-
 
 def p_stmt(p):
     """stmt : base_stmt
     | if_stmt
     | while_stmt"""
 
-
 def p_base_stmt(p):
     """base_stmt : assign_stmt
     | read_stmt
     | write_stmt
     | return_stmt"""
-
 
 ## Basic Statements
 def p_assign_stmt(p):
@@ -193,18 +173,14 @@ def p_assign_expr(p):
     for item in temp_IR_code:
         output_IR_code.append(item)
 
-
 def p_read_stmt(p):
     """read_stmt : READ LPAREN id_list RPAREN SEMI"""
     
-
 def p_write_stmt(p):
     """write_stmt : WRITE LPAREN id_list RPAREN SEMI"""
 
-
 def p_return_stmt(p):
     """return_stmt : RETURN expr SEMI"""
-
 
 ## Expressions
 def p_expr(p):
@@ -224,8 +200,7 @@ def p_expr_prefix(p):
         if p[1]:
             p[0] = p[1]+p[2]+p[3]
         else:
-            p[0] = p[2]+p[3]
-    
+            p[0] = p[2]+p[3]    
 
 def p_factor(p):
     """factor : factor_prefix postfix_expr"""
@@ -236,7 +211,6 @@ def p_factor(p):
     elif p[2]:
         p[0] = p[2]
 
-
 def p_factor_prefix(p):
     """factor_prefix : factor_prefix postfix_expr mulop
     | empty"""
@@ -245,7 +219,6 @@ def p_factor_prefix(p):
             p[0] = p[1]+p[2]+p[3]
         else:
             p[0] = p[2]+p[3]
-
 
 def p_postfix_expr(p):
     """postfix_expr : primary
@@ -270,11 +243,13 @@ def p_expr_list(p):
     | empty"""
     if p[1]:
         p[0] = p[1]+p[2]
+
 def p_expr_list_tail(p):
     """expr_list_tail : COMMA expr expr_list_tail
     | empty"""
     if p[1]:
         p[0] = p[1]+p[2]
+
 def p_primary(p):
     """primary : LPAREN expr RPAREN
     | id
@@ -286,14 +261,12 @@ def p_primary(p):
     else:
         p[0] = [p[1]]+p[2]+[p[3]]
 
-# """addop : + | -"""
 def p_addop(p):
     """addop : PLUS
     | MINUS"""
 
     p[0] = [p[1]]
     
-# """mulop :  | /"""
 def p_mulop(p):
     """mulop : TIMES
     | DIVIDE"""
@@ -345,7 +318,11 @@ def p_cond(p):
     global label_stack
     global output_IR_code
 
-    temp_IR_code = generate_cond_IR_code(p[1],p[2],p[3])
+    temp_IR_code,expr1,expr2,op_type = generate_cond_IR_code(p[1],p[2],p[3])
+    if op_type == "INT":
+        op_type = "I"
+    else:
+        op_type = "F"
     for item in temp_IR_code:
         output_IR_code.append(str(item))
 
@@ -355,22 +332,20 @@ def p_cond(p):
     end_ctrl = "label" + str(label_count)
     
     op = str(p[2].strip())
-    expr1 = "var1" #str(p[1]).strip()
-    expr2 = "var2" # str(p[3]).strip()
-    
+
     out = ""
-    if op == "<=":
-        out = "LEI " + expr1 + " " + expr2 + " " +  end_ctrl
-    elif op == ">=":
-        out = "GEI " + expr1 + " " +  expr2 + " " +  end_ctrl
+    if op == ">=":
+        out = "LT"+op_type+" " + expr1 + " " + expr2 + " " +  end_ctrl
+    elif op == "<=":
+        out = "GT"+op_type+" " + expr1 + " " +  expr2 + " " +  end_ctrl
     elif op == "!=":
-        out = "EQI " + expr1 + " " +  expr2 + " " +  end_ctrl
-    elif op == ">":
-        out = "GT " + expr1 + " " +  expr2 + " " +  end_ctrl
+        out = "EQ"+op_type+" " + expr1 + " " +  expr2 + " " +  end_ctrl
     elif op == "<":
-        out = "LT " + expr1 + " " +  expr2 + " " +  end_ctrl
+        out = "GE"+op_type+" " + expr1 + " " +  expr2 + " " +  end_ctrl
+    elif op == ">":
+        out = "LE"+op_type+" " + expr1 + " " +  expr2 + " " +  end_ctrl
     elif op == "=":
-        out = "EQ " + expr1 + " " +  expr2 + " " +  end_ctrl
+        out = "NE"+op_type+" " + expr1 + " " +  expr2 + " " +  end_ctrl
     
     #print(out)
     output_IR_code.append(out)
@@ -379,7 +354,6 @@ def p_cond(p):
 def p_compop(p):
     """compop : COMPOP"""
     p[0] = p[1]
-
 
 def p_insert_label(p): #cuz idk how to tell if we got to cond from while or if
     """insert_label : empty"""
@@ -419,11 +393,9 @@ def p_else_scope(p):
     """else_scope : empty"""
     new_cond_scope()
 
-
 def p_end_if(p):
     """end_if : empty"""
     end_scope()
-
 
 def p_error(p):
     print("Not accepted")
@@ -442,13 +414,11 @@ def new_cond_scope():
     if debug is 3:
         print("\nSymbol table", cond_sym_table.name)
 
-
 def new_func_scope():
     func_sym_table = Node.SymbolTable("FUNC")
     if debug is 3:
         print("new scope", func_sym_table.name, "which has a parent", scope_stack.peek().name)
     scope_stack.push(func_sym_table)
-
 
 def end_scope():
     if not scope_stack.is_empty():
@@ -458,7 +428,6 @@ def end_scope():
             print("which is", scope_stack.peek().name)
     else:
         print("Stack is empty")
-
 
 def generate_cond_IR_code(expr1,compop,expr2):
     input_list1 = convert_to_postfix(expr1)
@@ -548,16 +517,7 @@ def generate_cond_IR_code(expr1,compop,expr2):
         else:
             return_string.append("STOREF "+input_list2[0]+" T$"+str(the_reg))
 
-
-    #print("HELLLLOOOOOOOOOO")
-    #print("important_reg1 = "+str(important_reg1))
-    #print("important_reg2 = "+str(important_reg2))
-    
-    #print("compop = "+compop)
-    return return_string
-
-
-
+    return return_string,"$T"+str(important_reg1),"$T"+str(important_reg2),op_type
 
 def generate_assign_expr_IR_code(in_id, expr):
     input_list = convert_to_postfix(expr)
@@ -648,7 +608,6 @@ def convert_to_postfix(input_string):
         stack.pop(0)
     return symbol_list
 
-
 def get_next_reg():
     global cur_reg
     cur_reg += 1
@@ -656,7 +615,7 @@ def get_next_reg():
 
 
 
-
+#here starts the executing of code
 parser = yacc.yacc()
 
 result = parser.parse(data)
