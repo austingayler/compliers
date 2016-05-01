@@ -82,7 +82,7 @@ done
 #Run the diff between sets of files. 
 for file in $FINAL1
 do
-  filename=${j%.*}
+  filename=${file%.*}
   tinyname=${filename##*/}
   output="${tinyname}.out"
   diff -b -s Step4/tinyout/$output Step4/usertest/outputs/$output
